@@ -30,5 +30,16 @@
 /src/tests/GlueFramework.CoreTests/bin/Debug/net8.0
 /src/tests/GlueFramework.CoreTests/obj
 /src/tests/OrchardCore.Cms.Module1Tests/obj
+/src/Demo.Web/Demo.Web/bin/Release/net8.0
+/src/framework/GlueFramework.AuditLog.Abstractions/bin
+/src/framework/GlueFramework.AuditLogModule/bin
+/src/framework/GlueFramework.Core/bin
+/src/framework/GlueFramework.OrchardCore.Observability/bin
+/src/framework/GlueFramework.OrchardCoreModule/bin/Release/net8.0
+/src/framework/GlueFramework.OutboxModule/bin
+/src/framework/GlueFramework.WebCore/bin/Release
+/src/modules/Demo.CustomModule/bin/Release/net8.0
+/src/modules/Demo.DDD.OrchardCore/bin/Release/net8.0
+/src/tests/GlueFramework.CoreTests/bin/Release/net8.0
 /src/framework/GlueFramework.OutboxModule/bin/Debug/net8.0
 /src/framework/GlueFramework.AuditLogModule/bin/Debug/net8.0

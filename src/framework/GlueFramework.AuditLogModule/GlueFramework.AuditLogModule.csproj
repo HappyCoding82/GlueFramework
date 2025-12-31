@@ -1,15 +1,28 @@
 <Project Sdk="Microsoft.NET.Sdk.Razor">
 
-  <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<AddRazorSupportForMvc>true</AddRazorSupportForMvc>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+		<Title>Glue Freamework Aduit Log Module</Title>
+		<Version>1.0.0</Version>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <FrameworkReference Include="Microsoft.AspNetCore.App" />
-  </ItemGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+		<GenerateAssemblyInfo>False</GenerateAssemblyInfo>
+		<Title>Glue Freamework Aduit Log Module</Title>
+		<PublishWebProject>false</PublishWebProject>
+		<EnableSdkDefaultItems>true</EnableSdkDefaultItems>
+		<IsPackable>true</IsPackable>
+
+		<DefaultItemExcludes>$(DefaultItemExcludes);wwwroot/**;appsettings*.json</DefaultItemExcludes>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<FrameworkReference Include="Microsoft.AspNetCore.App" />
+	</ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="OrchardCore.Data.Abstractions" Version="2.2.1" />
@@ -20,14 +33,16 @@
     <PackageReference Include="OrchardCore.Security" Version="2.2.1" />
   </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Castle.Core" Version="5.1.1" />
-    <PackageReference Include="Serilog.Filters.Expressions" Version="2.1.0" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Castle.Core" Version="5.1.1" />
+		<PackageReference Include="Serilog.Filters.Expressions" Version="2.1.0" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\GlueFramework.AuditLog.Abstractions\GlueFramework.AuditLog.Abstractions.csproj" />
-    <ProjectReference Include="..\GlueFramework.Core\GlueFramework.Core.csproj" />
-  </ItemGroup>
+
+
+	<ItemGroup>
+		<ProjectReference Include="..\GlueFramework.AuditLog.Abstractions\GlueFramework.AuditLog.Abstractions.csproj" />
+		<ProjectReference Include="..\GlueFramework.Core\GlueFramework.Core.csproj" />
+	</ItemGroup>
 
 </Project>
