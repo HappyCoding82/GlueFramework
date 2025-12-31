@@ -1,0 +1,76 @@
+name: CI Build
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        dotnet-version: ['8.0.x']
+        
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ matrix.dotnet-version }}
+        
+    - name: Cache NuGet packages
+      uses: actions/cache@v4
+      with:
+        path: ~/.nuget/packages
+        key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj', '**/*.sln') }}
+        restore-keys: |
+          ${{ runner.os }}-nuget-
+          
+    - name: Restore dependencies
+      run: dotnet restore src/Demo.Web/Demo.Web.sln
+      
+    - name: Build solution
+      run: dotnet build src/Demo.Web/Demo.Web.sln --configuration Release --no-restore
+      
+    - name: Run tests
+      run: dotnet test src/Demo.Web/Demo.Web.sln --configuration Release --no-restore --verbosity normal
+      
+    - name: Publish web application
+      run: |
+        dotnet publish src/Demo.Web/Demo.Web/Demo.Web.csproj \
+          --configuration Release \
+          --output ./publish \
+          --no-build
+          
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: web-app-${{ matrix.dotnet-version }}
+        path: ./publish/
+
+  build-windows:
+    runs-on: windows-latest
+    
+    strategy:
+      matrix:
+        dotnet-version: ['8.0.x']
+        
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ matrix.dotnet-version }}
+        
+    - name: Restore dependencies
+      run: dotnet restore src/Demo.Web/Demo.Web.sln
+      
+    - name: Build solution
+      run: dotnet build src/Demo.Web/Demo.Web.sln --configuration Release --no-restore
