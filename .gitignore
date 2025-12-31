@@ -30,3 +30,5 @@
 /src/tests/GlueFramework.CoreTests/bin/Debug/net8.0
 /src/tests/GlueFramework.CoreTests/obj
 /src/tests/OrchardCore.Cms.Module1Tests/obj
+/src/framework/GlueFramework.OutboxModule/bin/Debug/net8.0
+/src/framework/GlueFramework.AuditLogModule/bin/Debug/net8.0

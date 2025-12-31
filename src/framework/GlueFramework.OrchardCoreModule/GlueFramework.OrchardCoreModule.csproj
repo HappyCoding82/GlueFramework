@@ -35,9 +35,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="OrchardCore.Data.Abstractions" Version="2.1.6" />
-		<PackageReference Include="OrchardCore.Data.YesSql.Abstractions" Version="2.1.6" />
-		<PackageReference Include="OrchardCore.Module.Targets" Version="2.1.6" />
+		<PackageReference Include="OrchardCore.Data.Abstractions" Version="2.2.1" />
+		<PackageReference Include="OrchardCore.Data.YesSql.Abstractions" Version="2.2.1" />
+		<PackageReference Include="OrchardCore.Module.Targets" Version="2.2.1" />
 		<PackageReference Include="HotChocolate.AspNetCore" Version="15.1.0" />
 		<PackageReference Include="HotChocolate.Execution" Version="15.1.0" />
 		<PackageReference Include="HotChocolate.Types" Version="15.1.0" />
