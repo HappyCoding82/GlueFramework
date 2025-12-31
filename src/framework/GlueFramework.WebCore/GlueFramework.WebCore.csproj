@@ -5,6 +5,9 @@
 		<GenerateDocumentationFile>False</GenerateDocumentationFile>
 		<DocumentationFile>SwaggerApi.xml</DocumentationFile>
 		<OutputType>Library</OutputType>
+		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+		<Title>Glue Framework Web Core</Title> 
+		<Version>1.0.0</Version>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -13,6 +16,11 @@
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
 		<GenerateAssemblyInfo>False</GenerateAssemblyInfo>
+		<Title>Glue Framework Web Core</Title>
+		<PublishWebProject>false</PublishWebProject>
+		<EnableSdkDefaultItems>true</EnableSdkDefaultItems>
+		<IsPackable>true</IsPackable> 
+		<DefaultItemExcludes>$(DefaultItemExcludes);wwwroot/**;appsettings*.json</DefaultItemExcludes>
 	</PropertyGroup>
 
 	<ItemGroup>
