@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<AddRazorSupportForMvc>true</AddRazorSupportForMvc>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<FrameworkReference Include="Microsoft.AspNetCore.App" />
+	</ItemGroup>
+
+	<ItemGroup>
+    <PackageReference Include="OrchardCore.Data.Abstractions" Version="2.1.6" />
+    <PackageReference Include="OrchardCore.Data.YesSql.Abstractions" Version="2.1.6" />
+    <PackageReference Include="OrchardCore.Module.Targets" Version="2.1.6" />
+    <PackageReference Include="OrchardCore.Security" Version="2.1.6" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="8.0.0" />
+  </ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\..\framework\GlueFramework.OrchardCoreModule\GlueFramework.OrchardCoreModule.csproj" />
+	</ItemGroup>
+
+</Project>

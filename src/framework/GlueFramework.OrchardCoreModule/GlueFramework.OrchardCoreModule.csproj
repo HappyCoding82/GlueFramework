@@ -1,0 +1,52 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<AddRazorSupportForMvc>true</AddRazorSupportForMvc>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+	</PropertyGroup>
+
+	<ItemGroup>
+	  <Compile Remove="Controllers\**" />
+	  <Compile Remove="Demo\**" />
+	  <Compile Remove="GraphQL\**" />
+	  <Compile Include="GraphQL\Filtering\**\*.cs" />
+	  <Compile Remove="Views\**" />
+	  <EmbeddedResource Remove="Controllers\**" />
+	  <EmbeddedResource Remove="Demo\**" />
+	  <EmbeddedResource Remove="GraphQL\**" />
+	  <EmbeddedResource Include="GraphQL\Filtering\**\*.cs" />
+	  <EmbeddedResource Remove="Views\**" />
+	  <None Remove="Controllers\**" />
+	  <None Remove="Demo\**" />
+	  <None Remove="GraphQL\**" />
+	  <None Include="GraphQL\Filtering\**\*.cs" />
+	  <None Remove="Views\**" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Compile Include="GraphQL\RootMutation.cs" />
+	  <Compile Include="GraphQL\RootQuery.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<FrameworkReference Include="Microsoft.AspNetCore.App" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="OrchardCore.Data.Abstractions" Version="2.1.6" />
+		<PackageReference Include="OrchardCore.Data.YesSql.Abstractions" Version="2.1.6" />
+		<PackageReference Include="OrchardCore.Module.Targets" Version="2.1.6" />
+		<PackageReference Include="HotChocolate.AspNetCore" Version="15.1.0" />
+		<PackageReference Include="HotChocolate.Execution" Version="15.1.0" />
+		<PackageReference Include="HotChocolate.Types" Version="15.1.0" />
+		<PackageReference Include="HotChocolate.Language" Version="15.1.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\GlueFramework.Core\GlueFramework.Core.csproj" />
+	  <ProjectReference Include="..\GlueFramework.WebCore\GlueFramework.WebCore.csproj" />
+	</ItemGroup>
+
+</Project>

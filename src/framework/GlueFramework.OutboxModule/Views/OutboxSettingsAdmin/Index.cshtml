@@ -1,0 +1,39 @@
+@model GlueFramework.OutboxModule.Settings.OutboxSettings
+
+<h1>Outbox Settings</h1>
+
+<form method="post">
+    @Html.AntiForgeryToken()
+
+    <div class="mb-3 form-check">
+        <input class="form-check-input" type="checkbox" asp-for="Enabled" />
+        <label class="form-check-label" asp-for="Enabled"></label>
+    </div>
+
+    <div class="mb-3 form-check">
+        <input class="form-check-input" type="checkbox" asp-for="AutoEnqueueIntegrationEvents" />
+        <label class="form-check-label" asp-for="AutoEnqueueIntegrationEvents"></label>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label" asp-for="DispatchIntervalSeconds"></label>
+        <input class="form-control" asp-for="DispatchIntervalSeconds" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label" asp-for="BatchSize"></label>
+        <input class="form-control" asp-for="BatchSize" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label" asp-for="InboxRetentionDays"></label>
+        <input class="form-control" asp-for="InboxRetentionDays" />
+    </div>
+
+    <div class="mb-3 form-check">
+        <input class="form-check-input" type="checkbox" asp-for="EnableInboxCleanup" />
+        <label class="form-check-label" asp-for="EnableInboxCleanup"></label>
+    </div>
+
+    <button class="btn btn-primary" type="submit">Save</button>
+</form>

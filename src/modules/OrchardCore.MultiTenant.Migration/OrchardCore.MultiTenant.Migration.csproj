@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <OutputType>Library</OutputType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="C:\Users\Summer\.nuget\packages\orchardcore.module.targets\2.1.6\build\Package.Build.props" />
+  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="OrchardCore.Module.Targets" Version="2.1.6" />
+		<PackageReference Include="OrchardCore.ContentManagement" Version="2.1.6" />
+		<PackageReference Include="OrchardCore.ContentTypes.Abstractions" Version="2.1.6" />
+		<PackageReference Include="OrchardCore.DisplayManagement" Version="2.1.6" />
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.0" />
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="9.0.0" />
+		<PackageReference Include="OrchardCore.Tenants" Version="2.1.6" />
+	</ItemGroup>
+</Project>

@@ -1,0 +1,81 @@
+@model GlueFramework.OrchardCore.Observability.ViewModels.ObservabilityStatusViewModel
+
+<h1>Observability</h1>
+
+<div class="alert alert-secondary">Tenant: @Model.TenantName</div>
+
+<h2>Runtime (Current Process)</h2>
+
+<table class="table">
+    <tr>
+        <th>Started</th>
+        <td>@Model.Runtime.Started</td>
+    </tr>
+    <tr>
+        <th>Applied OTLP Endpoint</th>
+        <td>@(Model.Runtime.AppliedOtlpEndpoint ?? "(not set)")</td>
+    </tr>
+    <tr>
+        <th>Applied Trace Sample Rate</th>
+        <td>@Model.Runtime.AppliedTraceSampleRate</td>
+    </tr>
+    <tr>
+        <th>Started UTC</th>
+        <td>@(Model.Runtime.StartedUtc?.ToString("u") ?? "")</td>
+    </tr>
+</table>
+
+@if (!string.IsNullOrWhiteSpace(Model.Runtime.LastError))
+{
+    <div class="alert alert-danger">
+        <div>LastErrorUtc: @(Model.Runtime.LastErrorUtc?.ToString("u") ?? "")</div>
+        <pre style="white-space: pre-wrap">@Model.Runtime.LastError</pre>
+    </div>
+}
+
+<h2>Tenant Settings (Database)</h2>
+
+<table class="table">
+    <tr>
+        <th>Enabled</th>
+        <td>@Model.Tenant.Enabled</td>
+    </tr>
+    <tr>
+        <th>OTLP Endpoint</th>
+        <td>@(Model.Tenant.OtlpEndpoint ?? "(not set)")</td>
+    </tr>
+    <tr>
+        <th>Trace Sample Rate</th>
+        <td>@Model.Tenant.TraceSampleRate</td>
+    </tr>
+</table>
+
+<h2>Appsettings (Configuration) Defaults</h2>
+
+<table class="table">
+    <tr>
+        <th>Enabled</th>
+        <td>@Model.Config.Enabled</td>
+    </tr>
+    <tr>
+        <th>OTLP Endpoint</th>
+        <td>@(Model.Config.OtlpEndpoint ?? "(not set)")</td>
+    </tr>
+    <tr>
+        <th>Trace Sample Rate</th>
+        <td>@Model.Config.TraceSampleRate</td>
+    </tr>
+</table>
+
+@if (!string.IsNullOrWhiteSpace(Model.Tenant.DashboardUrl))
+{
+    <p><a class="btn btn-primary" href="@Model.Tenant.DashboardUrl" target="_blank">Open Dashboard</a></p>
+}
+@if (!string.IsNullOrWhiteSpace(Model.Tenant.TracesUrl))
+{
+    <p><a class="btn btn-secondary" href="@Model.Tenant.TracesUrl" target="_blank">Open Traces</a></p>
+}
+@if (!string.IsNullOrWhiteSpace(Model.Tenant.MetricsUrl))
+{
+    <p><a class="btn btn-secondary" href="@Model.Tenant.MetricsUrl" target="_blank">Open Metrics</a></p>
+}

@@ -1,0 +1,33 @@
+我自己开发的Orchard core 自定义模块如何实现为Graph ql？
+/framework/GlueFramework.Core 是我目前的架构，我希望对它进行大修，
+但是我希望保留使用我目前框架中的Linq to Dapper 来实现Linq 变为where 条件等辅助生成SQL
+
+使用GraphQL 实现在服务器端与客户端的查询和传输的灵活性，避免浪费传输次数和数量？  根据 GraphQL 字段自动裁剪 SQL（SELECT 指定字段）通过裁剪SQL做到类似的灵活性，比如根据选中的字段缩减SQL等
+
+
+给我的感觉GraphQL调用很方便，但是实现起来比Restful 复杂了不少，每实现一个GraphQL 查询要新增不少的实现类， 有没有简单的办法:
+方案 1：使用 动态 GraphQL Resolver（推荐） 还是
+方案2 ？ 使用 “自动映射 GraphQL 类型”?
+还是推荐方案：方案 1 + 方案 2
+组合方式：
+
+用 AutoRegister GraphTypes 自动创建类型
+
+用一个通用 “Dynamic Query Resolver” 处理所有表/实体
+
+Dapper 自动 SELECT 字段裁剪
+
+极简代码，适合快速开发
+
+这样我写 GraphQL 的成本甚至比 REST 还低。
+
+这种情况如果我需要加别的表呢？ 比如order , 是否：
+只要做 两件事：
+
+增加 POCO（模型类）
+
+在 DynamicItemType 或自动注册类型里映射字段（方案 2 可完全自动化）
+
+我如何实现GraphQL一次查询多个实体，以及打包SQL 一次执行多个，避免数据库多次连接？
+
+请同时告诉我多个查询的情况下，如何使用前缀来避免重复？

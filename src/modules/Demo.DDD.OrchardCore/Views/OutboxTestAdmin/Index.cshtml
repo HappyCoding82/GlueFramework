@@ -1,0 +1,95 @@
+@model Demo.DDD.OrchardCore.Controllers.OutboxTestAdminController.OutboxTestVm
+
+<h1>Demo Outbox Test</h1>
+
+<form method="post" asp-action="Trigger">
+    @Html.AntiForgeryToken()
+
+    <div class="row g-2">
+        <div class="col-md-8">
+            <label class="form-label">Message</label>
+            <input class="form-control" name="message" placeholder="optional" />
+        </div>
+        <div class="col-md-4 align-self-end">
+            <button class="btn btn-primary" type="submit">Trigger (Write DB + PublishAfterCommit)</button>
+        </div>
+    </div>
+</form>
+
+@if (!string.IsNullOrWhiteSpace(Model.LastRequestId))
+{
+    <div class="alert alert-info mt-3">Last RequestId: <strong>@Model.LastRequestId</strong></div>
+}
+
+<hr />
+
+<h2>Latest Requests</h2>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>CreatedUtc</th>
+            <th>RequestId</th>
+            <th>Message</th>
+        </tr>
+    </thead>
+    <tbody>
+    @foreach (var x in Model.Requests)
+    {
+        <tr>
+            <td>@x.CreatedUtc</td>
+            <td>@x.RequestId</td>
+            <td>@x.Message</td>
+        </tr>
+    }
+    </tbody>
+</table>
+
+<h2>Latest Outbox Messages (filtered)</h2>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>CreatedUtc</th>
+            <th>MessageId</th>
+            <th>Type</th>
+            <th>Status</th>
+            <th>TryCount</th>
+            <th>NextRetryUtc</th>
+            <th>LastError</th>
+        </tr>
+    </thead>
+    <tbody>
+    @foreach (var x in Model.OutboxMessages)
+    {
+        <tr>
+            <td>@x.CreatedUtc</td>
+            <td>@x.MessageId</td>
+            <td>@x.Type</td>
+            <td>@x.Status</td>
+            <td>@x.TryCount</td>
+            <td>@x.NextRetryUtc</td>
+            <td>@x.LastError</td>
+        </tr>
+    }
+    </tbody>
+</table>
+
+<h2>Latest Handled</h2>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>HandledUtc</th>
+            <th>RequestId</th>
+            <th>Handler</th>
+        </tr>
+    </thead>
+    <tbody>
+    @foreach (var x in Model.Handled)
+    {
+        <tr>
+            <td>@x.HandledUtc</td>
+            <td>@x.RequestId</td>
+            <td>@x.Handler</td>
+        </tr>
+    }
+    </tbody>
+</table>

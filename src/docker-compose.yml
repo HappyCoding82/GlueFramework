@@ -1,0 +1,67 @@
+services:
+  # PostgreSQL数据库服务
+  postgres-db:     
+    container_name: postgres-db
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_DB=orchardcore
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=123456
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - demo-network
+    restart: unless-stopped
+
+  # OrchardCore应用服务
+  orchardcore-app:
+    container_name: orchardcore-app
+    build:
+      context: .
+      dockerfile: demo.Web/demo.Web/Dockerfile 
+    labels:
+        ci-build: "true"
+    ports:
+      - "53663:80"
+    networks:
+      - demo-network
+    restart: unless-stopped
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:80
+      - ConnectionStrings__DefaultConnection=Host=postgres-db;Port=5432;Database=orchardcore;Username=postgres;Password=123456
+    volumes:
+      - app-data:/app/App_Data
+
+  # Next.js前端服务
+  nextjs-frontend:
+    container_name: nextjs-frontend
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile
+    labels:
+        ci-build: "true"
+    ports:
+      - "3000:3000"
+    networks:
+      - demo-network
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_URL=http://orchardcore-app:80
+    depends_on:
+      - orchardcore-app
+
+# 数据卷配置
+volumes:
+  postgres-data:
+    name: demo-postgres-data
+  app-data:
+    name: demo-app-data
+
+# 网络配置
+networks:
+  demo-network:
+    driver: bridge
