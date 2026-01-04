@@ -33,6 +33,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GlueFramework.OrchardCore.O
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GlueFramework.CoreTests", "..\tests\GlueFramework.CoreTests\GlueFramework.CoreTests.csproj", "{9F776DFD-578C-45AF-916A-1F3C1AAD8FBE}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GlueFramework.CustomSysSettingsModule", "..\framework\GlueFramework.CustomSysSettingsModule\GlueFramework.CustomSysSettingsModule.csproj", "{BBA7742F-25D1-4B89-B0B7-9ADF48DD467D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -83,6 +85,10 @@ Global
 		{9F776DFD-578C-45AF-916A-1F3C1AAD8FBE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9F776DFD-578C-45AF-916A-1F3C1AAD8FBE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9F776DFD-578C-45AF-916A-1F3C1AAD8FBE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BBA7742F-25D1-4B89-B0B7-9ADF48DD467D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BBA7742F-25D1-4B89-B0B7-9ADF48DD467D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BBA7742F-25D1-4B89-B0B7-9ADF48DD467D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BBA7742F-25D1-4B89-B0B7-9ADF48DD467D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -99,5 +105,6 @@ Global
 		{36E5DB75-6528-42CD-8C96-6FAEABAB20D8} = {7F24EE01-F514-4E74-8740-E01E46239B66}
 		{C89ABC2F-CEB4-4A67-8E33-9AD19AA56B63} = {7F24EE01-F514-4E74-8740-E01E46239B66}
 		{9F776DFD-578C-45AF-916A-1F3C1AAD8FBE} = {7E422A8D-BBC3-4F2F-8193-81539E284D51}
+		{BBA7742F-25D1-4B89-B0B7-9ADF48DD467D} = {7F24EE01-F514-4E74-8740-E01E46239B66}
 	EndGlobalSection
 EndGlobal

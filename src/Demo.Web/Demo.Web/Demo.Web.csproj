@@ -24,6 +24,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\framework\GlueFramework.CustomSysSettingsModule\GlueFramework.CustomSysSettingsModule.csproj" />
+    <ProjectReference Include="..\..\framework\GlueFramework.OutboxModule\GlueFramework.OutboxModule.csproj" />
     <ProjectReference Include="..\..\modules\Demo.CustomModule\Demo.CustomModule.csproj" />
     <ProjectReference Include="..\..\modules\Demo.DDD.OrchardCore\Demo.DDD.OrchardCore.csproj" />
   

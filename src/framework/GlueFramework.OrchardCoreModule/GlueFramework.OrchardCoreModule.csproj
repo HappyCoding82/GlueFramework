@@ -61,4 +61,8 @@
 	  <ProjectReference Include="..\GlueFramework.WebCore\GlueFramework.WebCore.csproj" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <Folder Include="Services\" />
+	</ItemGroup>
+
 </Project>

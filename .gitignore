@@ -43,3 +43,9 @@
 /src/tests/GlueFramework.CoreTests/bin/Release/net8.0
 /src/framework/GlueFramework.OutboxModule/bin/Debug/net8.0
 /src/framework/GlueFramework.AuditLogModule/bin/Debug/net8.0
+/nuget_packages
+/src/framework/GlueFramework.CustomSysSettingsModule/bin
+/src/framework/GlueFramework.CustomSysSettingsModule/obj
+/src/framework/GlueFramework.OrchardCoreModule/bin/Debug
+/src/framework/GlueFramework.OrchardCoreModule/bin/Release
+/src/Demo.Web/Demo.Web/wwwroot/t8/is-cache/d/f/d/4/0/1/1/6/7/0/8/6

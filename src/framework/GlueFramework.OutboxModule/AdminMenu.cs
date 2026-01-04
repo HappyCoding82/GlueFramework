@@ -22,7 +22,7 @@ namespace GlueFramework.OutboxModule
             builder
                 .Add(S["Configuration"], "100", config => config
                     .Add(S["Outbox"], "50", item => item
-                        .Action("Index", "OutboxSettingsAdmin", new { area = "Framework.OutboxModule" })
+                        .Action("Index", "OutboxSettingsAdmin", new { area = "GlueFramework.OutboxModule" })
                         .Permission(Permissions.ManageOutbox)));
 
             return ValueTask.CompletedTask;

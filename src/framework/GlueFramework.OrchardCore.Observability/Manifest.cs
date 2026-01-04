@@ -6,5 +6,6 @@ using OrchardCore.Modules.Manifest;
     Website = "",
     Version = "0.0.1",
     Description = "Observability (OpenTelemetry) integration.",
-    Category = "Diagnostics"
+    Category = "Diagnostics",
+    Dependencies = new string[] { "GlueFramework.OrchardCoreModule" }
 )]
