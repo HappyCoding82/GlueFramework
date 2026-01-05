@@ -61,6 +61,11 @@
         {
             <div class="tab-pane fade" id="@(string.IsNullOrEmpty(group) ? "default": group)" role="tabpanel">
                 <table id="tb_settings_@group" class="table table-bordered">
+                    <colgroup>
+                        <col style="min-width: 250px;width: 250px;">
+                        <col> 
+                        <col style="width: 200px;"> 
+                    </colgroup>
                     <thead>
                         <tr style="background-color:#f8f9fa">
                             <th>Key</th>
@@ -182,7 +187,7 @@
           //alert("Please save the previous newly added group before adding it again");
         } else {
           const tabId = `tab-${tabCounter}`;
-          const tabTitle = `新标签 ${tabCounter}`;
+          const tabTitle = `New group ${tabCounter}`;
 
           // 创建导航标签
           const $tabItem = $(`
@@ -200,6 +205,11 @@
           const $contentPane = $(`
                   <div class="tab-pane fade" id="${tabId}" role="tabpanel">
                       <table id="tb_settings" class="table table-bordered">
+                        <colgroup>
+                        <col style="min-width: 250px;width: 250px;">
+                        <col>
+                        <col style="width: 200px;">
+                    </colgroup>
                       <thead>
                           <tr style="background-color:#f8f9fa">
                               <th>Key</th>
