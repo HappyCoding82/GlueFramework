@@ -2,7 +2,7 @@
 using System.Security.Cryptography;
 using System.Text;
 
-namespace CustomSiteSettingsModule.Services
+namespace GlueFramework.CustomSysSettingsModule.Services
 {
     public class AesGcmCryptoService
     {

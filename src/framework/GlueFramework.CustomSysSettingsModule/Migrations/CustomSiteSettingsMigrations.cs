@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using YesSql.Sql;
 using OrchardCore.Data.Migration;
+using YesSql.Services;
 
 namespace GlueFramework.CustomSysSettingsModule.Migrations
 {
@@ -12,6 +13,7 @@ namespace GlueFramework.CustomSysSettingsModule.Migrations
         {
             _logger = logger;
         }
+
 
         public async Task<int> CreateAsync()
         {

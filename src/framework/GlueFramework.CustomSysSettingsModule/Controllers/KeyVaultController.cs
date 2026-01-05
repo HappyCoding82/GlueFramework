@@ -1,10 +1,10 @@
-﻿using CustomSiteSettingsModule.Abstrations;
-using CustomSiteSettingsModule.Security;
+﻿using GlueFramework.CustomSysSettingsModule.Abstrations;
+using GlueFramework.CustomSysSettingsModule.Security;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OrchardCore.Admin;
 
-namespace CustomSiteSettingsModule.Controllers
+namespace GlueFramework.CustomSysSettingsModule.Controllers
 {
     [Admin]
     [ApiExplorerSettings(IgnoreApi = true)]

@@ -1,6 +1,6 @@
-﻿using CustomSiteSettingsModule.Dtos;
+﻿using GlueFramework.CustomSysSettingsModule.Dtos;
 
-namespace CustomSiteSettingsModule.Abstractions
+namespace GlueFramework.CustomSysSettingsModule.Abstractions
 {
     public  interface ISysSettingsService
     {

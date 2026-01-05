@@ -3,7 +3,7 @@ using OrchardCore.Admin;
 using OrchardCore.Navigation;
 using OrchardCore.Security.Permissions;
 
-namespace CustomSiteSettingsModule
+namespace GlueFramework.CustomSysSettingsModule
 {
     
     public class ModuleSettingNavProvider : INavigationProvider

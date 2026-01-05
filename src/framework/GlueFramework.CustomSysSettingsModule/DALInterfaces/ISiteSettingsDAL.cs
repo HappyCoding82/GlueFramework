@@ -1,7 +1,7 @@
 ﻿using GlueFramework.Core.Abstractions;
-using CustomSiteSettingsModule.DataModels;
+using GlueFramework.CustomSysSettingsModule.DataModels;
 
-namespace CustomSiteSettingsModule.DALInterfaces
+namespace GlueFramework.CustomSysSettingsModule.DALInterfaces
 {
     public interface ISiteSettingsDAL:IDALBase
     {

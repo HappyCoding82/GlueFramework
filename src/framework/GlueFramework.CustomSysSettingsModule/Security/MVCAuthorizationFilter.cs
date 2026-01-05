@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace CustomSiteSettingsModule.Security
+namespace GlueFramework.CustomSysSettingsModule.Security
 {
     public class MVCAuthorizationFilter : Attribute, IAsyncAuthorizationFilter
     {

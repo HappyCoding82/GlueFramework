@@ -1,11 +1,11 @@
 ﻿using GlueFramework.Core.Abstractions;
 using GlueFramework.Core.Services;
-using CustomSiteSettingsModule.Abstractions;
-using CustomSiteSettingsModule.DALInterfaces;
-using CustomSiteSettingsModule.DataModels;
-using CustomSiteSettingsModule.Dtos;
+using GlueFramework.CustomSysSettingsModule.Abstractions;
+using GlueFramework.CustomSysSettingsModule.DALInterfaces;
+using GlueFramework.CustomSysSettingsModule.DataModels;
+using GlueFramework.CustomSysSettingsModule.Dtos;
 
-namespace CustomSiteSettingsModule.Services
+namespace GlueFramework.CustomSysSettingsModule.Services
 {
     public class SysSettingsService : ServiceBase, ISysSettingsService
     {

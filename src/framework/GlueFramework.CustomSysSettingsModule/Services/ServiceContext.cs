@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Http;
-using CustomSiteSettingsModule.Abstractions;
+using GlueFramework.CustomSysSettingsModule.Abstractions;
 using System;
 
-namespace CustomSiteSettingsModule.Services
+namespace GlueFramework.CustomSysSettingsModule.Services
 {
     public class ServiceContext : IModuleServiceContext
     {

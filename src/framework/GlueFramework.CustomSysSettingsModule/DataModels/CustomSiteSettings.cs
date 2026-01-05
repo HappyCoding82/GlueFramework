@@ -1,7 +1,7 @@
 ﻿using GlueFramework.Core.ORM;
 using System.ComponentModel.DataAnnotations;
 
-namespace CustomSiteSettingsModule.DataModels
+namespace GlueFramework.CustomSysSettingsModule.DataModels
 {
     [DataTable("CustomSiteSettings")]
     public class CustomSiteSettings: ModelBase

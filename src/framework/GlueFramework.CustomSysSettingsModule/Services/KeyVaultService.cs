@@ -1,9 +1,9 @@
-﻿using CustomSiteSettingsModule.Abstrations;
+﻿using GlueFramework.CustomSysSettingsModule.Abstrations;
 using Microsoft.Extensions.Hosting;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace CustomSiteSettingsModule.Services
+namespace GlueFramework.CustomSysSettingsModule.Services
 {
     public class KeyVaultService: IKeyVaultService
     {

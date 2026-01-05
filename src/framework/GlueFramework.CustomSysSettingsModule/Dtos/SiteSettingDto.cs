@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace CustomSiteSettingsModule.Dtos
+namespace GlueFramework.CustomSysSettingsModule.Dtos
 {
     public class SiteSettingDto
     {

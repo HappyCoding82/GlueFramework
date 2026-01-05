@@ -2,19 +2,19 @@ using GlueFramework.Core.Abstractions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
-using CustomSiteSettingsModule.Abstractions;
-using CustomSiteSettingsModule.DALInterfaces;
-using CustomSiteSettingsModule.DataLayers;
-using CustomSiteSettingsModule.Services;
+using GlueFramework.CustomSysSettingsModule.Abstractions;
+using GlueFramework.CustomSysSettingsModule.DALInterfaces;
+using GlueFramework.CustomSysSettingsModule.DataLayers;
+using GlueFramework.CustomSysSettingsModule.Services;
 using OrchardCore.Data.Migration;
 using OrchardCore.Modules;
 using OrchardCore.Navigation;
 using GlueFramework.OrchardCoreModule;
 using OrchardCore.Security.Permissions;
-using CustomSiteSettingsModule.Abstrations;
+using GlueFramework.CustomSysSettingsModule.Abstrations;
 using GlueFramework.CustomSysSettingsModule.Migrations;
 
-namespace CustomSiteSettingsModule
+namespace GlueFramework.CustomSysSettingsModule
 {
     public class Startup : StartupBase
     {
@@ -25,9 +25,9 @@ namespace CustomSiteSettingsModule
             services.AddTransient<ISysSettingsService, SysSettingsService>();
             services.AddTransient<IDataTablePrefixProvider, TenantTablePrefixProvider>();
             services.AddScoped<INavigationProvider, ModuleSettingNavProvider>();
-            services.AddScoped<IDataMigration, CustomSiteSettingsMigrations>();
             services.AddScoped<IPermissionProvider, CustomSiteSettingsPermissionProvider>();
             services.AddScoped<IKeyVaultService, KeyVaultService>();
+            services.AddScoped<IDataMigration, CustomSiteSettingsMigrations>();
         }
 
         public override void Configure(IApplicationBuilder builder, IEndpointRouteBuilder routes, IServiceProvider serviceProvider)

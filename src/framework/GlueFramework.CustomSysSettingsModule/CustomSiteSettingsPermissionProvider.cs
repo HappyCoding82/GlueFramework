@@ -1,6 +1,6 @@
 ﻿using OrchardCore.Security.Permissions;
 
-namespace CustomSiteSettingsModule
+namespace GlueFramework.CustomSysSettingsModule
 {
     public class CustomSiteSettingsPermissionProvider : IPermissionProvider
     {

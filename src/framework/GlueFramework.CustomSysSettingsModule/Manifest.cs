@@ -1,12 +1,12 @@
 using OrchardCore.Modules.Manifest;
 
 [assembly: Module(
-    //Name = "CustomSiteSettingsModule",
-    Name = "GlueFramework.CustomSystemsettingsModule",
+    //Name = "GlueFramework.CustomSysSettingsModule",
+    Name = "GlueFramework.CustomSysSettingsModule",
     Author = "GlueFramework",
     Website = "https://orchardcore.net",
     Version = "0.0.1",
-    Description = "Custom Site Settings(Dictionary Key Values)",
-    Category = "Content Management",
+    Description = "Custom Sys Settings(Dictionary Key Values) - GlueFramework",
+    Category = "GlueFramework",
     Dependencies = new string[] { "GlueFramework.OrchardCoreModule" }
 )]

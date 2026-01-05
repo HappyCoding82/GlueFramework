@@ -2,14 +2,14 @@
 using Microsoft.AspNetCore.Mvc.Localization;
 using Microsoft.Extensions.Localization;
 using OrchardCore.Admin;
-using CustomSiteSettingsModule.Abstractions;
-using CustomSiteSettingsModule.Dtos;
+using GlueFramework.CustomSysSettingsModule.Abstractions;
+using GlueFramework.CustomSysSettingsModule.Dtos;
 using OrchardCore.DisplayManagement.Notify;
-using CustomSiteSettingsModule.Security;
+using GlueFramework.CustomSysSettingsModule.Security;
 using Microsoft.AspNetCore.Authorization;
-using CustomSiteSettingsModule.Abstrations;
+using GlueFramework.CustomSysSettingsModule.Abstrations;
 
-namespace CustomSiteSettingsModule.Controllers
+namespace GlueFramework.CustomSysSettingsModule.Controllers
 {
     [Admin]
     [ApiExplorerSettings(IgnoreApi = true)]

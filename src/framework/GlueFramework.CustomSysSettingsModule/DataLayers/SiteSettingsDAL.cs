@@ -1,9 +1,9 @@
 ﻿using GlueFramework.Core.Abstractions;
 using GlueFramework.Core.DataLayer;
-using CustomSiteSettingsModule.DALInterfaces;
-using CustomSiteSettingsModule.DataModels;
+using GlueFramework.CustomSysSettingsModule.DALInterfaces;
+using GlueFramework.CustomSysSettingsModule.DataModels;
 
-namespace CustomSiteSettingsModule.DataLayers
+namespace GlueFramework.CustomSysSettingsModule.DataLayers
 {
     public class SiteSettingsDAL : DALBase, ISiteSettingsDAL
     {

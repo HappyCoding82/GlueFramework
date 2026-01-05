@@ -1,4 +1,4 @@
-﻿namespace CustomSiteSettingsModule.Abstrations
+﻿namespace GlueFramework.CustomSysSettingsModule.Abstrations
 {
     public interface IKeyVaultService
     {

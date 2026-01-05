@@ -1,5 +1,5 @@
 ﻿
-namespace CustomSiteSettingsModule.Abstractions
+namespace GlueFramework.CustomSysSettingsModule.Abstractions
 {
     public interface IModuleServiceContext
     {
