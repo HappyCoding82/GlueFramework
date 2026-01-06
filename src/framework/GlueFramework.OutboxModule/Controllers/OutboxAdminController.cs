@@ -3,24 +3,22 @@ using Microsoft.Extensions.Options;
 using OrchardCore.Admin;
 using OrchardCore.Entities;
 using OrchardCore.Settings;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 using GlueFramework.OutboxModule.Options;
 using GlueFramework.OutboxModule.Settings;
 using GlueFramework.Core.Abstractions.Outbox;
+using GlueFramework.OutboxModule.Services;
 
 namespace GlueFramework.OutboxModule.Controllers
 {
     [Admin]
     public sealed class OutboxAdminController : Controller
     {
-        private readonly IOutboxStore _outbox;
+        private readonly OutboxService _outbox;
         private readonly IInboxStore _inbox;
         private readonly ISiteService _siteService;
         private readonly IOptions<OutboxOptions> _configOptions;
 
-        public OutboxAdminController(IOutboxStore outbox, IInboxStore inbox, ISiteService siteService, IOptions<OutboxOptions> configOptions)
+        public OutboxAdminController(OutboxService outbox, IInboxStore inbox, ISiteService siteService, IOptions<OutboxOptions> configOptions)
         {
             _outbox = outbox;
             _inbox = inbox;

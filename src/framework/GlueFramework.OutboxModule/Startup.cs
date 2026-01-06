@@ -2,11 +2,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
-using Microsoft.AspNetCore.Builder;
 using OrchardCore.Modules;
-using GlueFramework.Core.Abstractions.Outbox;
 using GlueFramework.Core.Services;
-using GlueFramework.OutboxModule.Infrastructure;
 using GlueFramework.OutboxModule.Options;
 using GlueFramework.OutboxModule.Services;
 using OrchardCore.Data.Migration;
@@ -41,10 +38,11 @@ namespace GlueFramework.OutboxModule
             services.TryAddSingleton<InProcEventBus>();
 
             // Must be scoped because the tenant table prefix provider depends on scoped YesSql.ISession.
-            services.TryAddScoped<IOutboxStore, SqlOutboxStore>();
-            services.TryAddScoped<IInboxStore, SqlInboxStore>();
+            //services.TryAddScoped<IOutboxStore, SqlOutboxStore>();
+            //services.TryAddScoped<IInboxStore, SqlInboxStore>();
+            services.TryAddScoped<OutboxService>();
             services.TryAddScoped<IOutboxEnqueuer, OutboxEnqueuer>();
-
+            services.TryAddScoped<OutboxDispatchService>();
             services.TryAddScoped<OutboxAutoEnqueueEventBusDecorator>();
             // Must override any existing IEventBus registration (e.g. AddInProcEventBus).
             services.Replace(ServiceDescriptor.Scoped<GlueFramework.Core.Abstractions.IEventBus>(sp =>

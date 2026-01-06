@@ -13,18 +13,18 @@ namespace GlueFramework.OutboxModule.Services
 
     public sealed class OutboxEnqueuer : IOutboxEnqueuer
     {
-        private readonly IOutboxStore _store;
+        private readonly OutboxService _outboxService;
 
-        public OutboxEnqueuer(IOutboxStore store)
+        public OutboxEnqueuer(OutboxService outboxService)
         {
-            _store = store;
+            _outboxService = outboxService;
         }
 
         public Task<Guid> EnqueueAsync<T>(T evt, CancellationToken cancellationToken = default)
         {
             var type = evt?.GetType().AssemblyQualifiedName ?? typeof(T).AssemblyQualifiedName ?? typeof(T).FullName ?? "Unknown";
             var payload = JsonSerializer.Serialize(evt, evt?.GetType() ?? typeof(T), OutboxJson.Options);
-            return _store.EnqueueAsync(type, payload, DateTimeOffset.UtcNow, cancellationToken);
+            return _outboxService.EnqueueAsync(type, payload, DateTimeOffset.UtcNow, cancellationToken);
         }
     }
 }

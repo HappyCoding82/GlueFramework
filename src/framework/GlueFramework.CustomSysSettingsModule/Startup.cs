@@ -13,6 +13,8 @@ using GlueFramework.OrchardCoreModule;
 using OrchardCore.Security.Permissions;
 using GlueFramework.CustomSysSettingsModule.Abstrations;
 using GlueFramework.CustomSysSettingsModule.Migrations;
+using GlueFramework.Core.Extensions;
+using GlueFramework.Core.DataLayer;
 
 namespace GlueFramework.CustomSysSettingsModule
 {
@@ -20,9 +22,11 @@ namespace GlueFramework.CustomSysSettingsModule
     {
         public override void ConfigureServices(IServiceCollection services)
         {
-            services.AddTransient<ISiteSettingsDAL, SiteSettingsDAL>();
+            //services.AddTransient<ISiteSettingsDAL, SiteSettingsDAL>();
             services.AddTransient<IModuleServiceContext, ServiceContext>();
-            services.AddTransient<ISysSettingsService, SysSettingsService>();
+            //services.AddTransient<ISysSettingsService, SysSettingsService>();
+            services.AddTransient<IDALFactory, DALFactory>();
+            services.AddTransactionalAuto<ISysSettingsService, SysSettingsService>(ServiceLifetime.Transient);
             services.AddTransient<IDataTablePrefixProvider, TenantTablePrefixProvider>();
             services.AddScoped<INavigationProvider, ModuleSettingNavProvider>();
             services.AddScoped<IPermissionProvider, CustomSiteSettingsPermissionProvider>();

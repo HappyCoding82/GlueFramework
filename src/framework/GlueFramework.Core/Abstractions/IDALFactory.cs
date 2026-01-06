@@ -4,6 +4,6 @@ namespace GlueFramework.Core.Abstractions
 {
     public interface IDALFactory 
     {
-        DAL CreateDAL<DAL>() where DAL : IDALBase;
+        DAL CreateDAL<DAL>(IDbSession session, params object[] args) where DAL : IDALBase;
     }
 }

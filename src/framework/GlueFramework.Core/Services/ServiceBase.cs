@@ -9,7 +9,7 @@ namespace GlueFramework.Core.Services
     public class ServiceBase : IServiceBase, ICacheKeyPrefixProvider
     {
         private IDbConnectionAccessor _dataAccesser;
-        private readonly IDataTablePrefixProvider? _dataTablePrefixProvider;
+        protected readonly IDataTablePrefixProvider? _dataTablePrefixProvider;
 
         private DbConnection? _transactionConnection;
         private IDbTransaction? _transaction;
@@ -32,82 +32,66 @@ namespace GlueFramework.Core.Services
             _dataAccesser = dbConnAccessor;
         }
 
-        protected readonly struct ConnectionScope : IDisposable
-        {
-            private readonly DbConnection? _ownedConnection;
-
-            internal ConnectionScope(IDbConnection connection, IDbTransaction? transaction, DbConnection? ownedConnection)
-            {
-                Connection = connection;
-                Transaction = transaction;
-                _ownedConnection = ownedConnection;
-            }
-
-            public IDbConnection Connection { get; }
-
-            public IDbTransaction? Transaction { get; }
-
-            public void Dispose()
-            {
-                if (_ownedConnection != null)
-                {
-                    _ownedConnection.Close();
-                    _ownedConnection.Dispose();
-                }
-            }
-        }
-
-        protected ConnectionScope OpenConnectionScope()
+        protected DbSessionScope OpenDbSessionScope()
         {
             if (_transactionConnection != null)
-                return new ConnectionScope(_transactionConnection, _transaction, ownedConnection: null);
+                return new DbSessionScope(_transactionConnection, _transaction, ownedConnection: null);
 
             var conn = _dataAccesser.CreateConnection();
             if (conn.State == ConnectionState.Closed)
                 conn.Open();
 
-            return new ConnectionScope(conn, transaction: null, ownedConnection: conn as DbConnection);
+            return new DbSessionScope(conn, transaction: null, ownedConnection: conn as DbConnection);
         }
 
         protected readonly struct JoinQuerySessionScope : IDisposable
         {
-            private readonly ConnectionScope _connectionScope;
+            private readonly DbSessionScope _sessionScope;
+            private readonly bool _disposeSessionScope;
             private readonly IDataTablePrefixProvider? _dataTablePrefixProvider;
 
-            internal JoinQuerySessionScope(ConnectionScope connectionScope, JoinQuerySession session)
+            internal JoinQuerySessionScope(DbSessionScope sessionScope, JoinQuerySession session, bool disposeSessionScope)
             {
-                _connectionScope = connectionScope;
+                _sessionScope = sessionScope;
+                _disposeSessionScope = disposeSessionScope;
                 Session = session;
                 _dataTablePrefixProvider = session.TablePrefixProvider;
             }
 
             public JoinQuerySession Session { get; }
 
-            public IDbConnection Connection => _connectionScope.Connection;
+            public IDbConnection Connection => _sessionScope.Connection;
 
-            public IDbTransaction? Transaction => _connectionScope.Transaction;
+            public IDbTransaction? Transaction => _sessionScope.Transaction;
 
             public IRepository<T> GetRepository<T>() where T : class
             {
-                return new Repository<T>(_connectionScope.Connection, _connectionScope.Transaction, _dataTablePrefixProvider);
+                return new Repository<T>(_sessionScope.Connection, _sessionScope.Transaction, _dataTablePrefixProvider);
             }
 
             public IRawSqlExecutor GetRawSqlExecutor()
             {
-                return new RawSqlExecutor(_connectionScope.Connection, _connectionScope.Transaction);
+                return new RawSqlExecutor(_sessionScope.Connection, _sessionScope.Transaction);
             }
 
             public void Dispose()
             {
-                _connectionScope.Dispose();
+                if (_disposeSessionScope)
+                    _sessionScope.Dispose();
             }
         }
 
         protected JoinQuerySessionScope OpenJoinQuerySessionScope()
         {
-            var scope = OpenConnectionScope();
+            var scope = OpenDbSessionScope();
             var session = JoinQuerySession.Wrap(scope.Connection, scope.Transaction, _dataTablePrefixProvider);
-            return new JoinQuerySessionScope(scope, session);
+            return new JoinQuerySessionScope(scope, session, disposeSessionScope: true);
+        }
+
+        protected JoinQuerySessionScope OpenJoinQuerySessionScope(DbSessionScope sessionScope)
+        {
+            var session = JoinQuerySession.Wrap(sessionScope.Connection, sessionScope.Transaction, _dataTablePrefixProvider);
+            return new JoinQuerySessionScope(sessionScope, session, disposeSessionScope: false);
         }
 
         protected async Task WithConnectionAsync(Func<IDbConnection, IDbTransaction?, Task> action)
@@ -182,7 +166,7 @@ namespace GlueFramework.Core.Services
             if (_transactionConnection != null)
                 return new PartitionedRepository<Model>(_transactionConnection, _transaction, _dataTablePrefixProvider);
 
-            return new PartitionedRepository<Model>(_dataAccesser.CreateConnection(), 
+            return new PartitionedRepository<Model>(_dataAccesser.CreateConnection(),
                 _dataTablePrefixProvider);
         }
 

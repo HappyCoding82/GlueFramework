@@ -1,44 +1,47 @@
 ﻿using Dapper;
 using GlueFramework.Core.Abstractions;
+using GlueFramework.Core.ORM;
 using GlueFramework.Core.UOW;
 using System.Data;
 
 namespace GlueFramework.Core.DataLayer
 {
-    public abstract class DALBase
+    public abstract class DALBase:IDALBase
     {
-        public DALBase(IDbConnectionAccessor dbConnectionAccessor)
+
+        protected readonly IDbSession _session;
+
+        public DALBase(IDbSession session)
         {
-            _dbConnectionAccessor = dbConnectionAccessor;
+            _session = session ?? throw new ArgumentNullException(nameof(session));
         }
-        public DALBase(IDbConnectionAccessor dbConnectionAccessor, IDataTablePrefixProvider tableNamePrefixProvider)
+
+        public DALBase(IDbSession session, IDataTablePrefixProvider tableNamePrefixProvider)
         {
-            _dbConnectionAccessor = dbConnectionAccessor;
+            _session = session ?? throw new ArgumentNullException(nameof(session));
             _tableNamePrefixProvider = tableNamePrefixProvider;
         }
 
-        protected IDbConnectionAccessor _dbConnectionAccessor;
+
         protected IDataTablePrefixProvider _tableNamePrefixProvider;
         protected IDbConnection DbConnection
         {
             get
             {
-                var dbConn = _dbConnectionAccessor.CreateConnection();
-
-                return dbConn;
+                return _session.Connection;
             }
         }
 
-        protected IRepository<T> GetRepository<T> () where T : class 
+        protected IRepository<T> GetRepository<T>() where T : class
         {
-            return new Repository<T>(_dbConnectionAccessor.CreateConnection(),
-                _tableNamePrefixProvider);
+            return new Repository<T>(_session.Connection, _session.Transaction, _tableNamePrefixProvider);
         }
 
         public async Task<IEnumerable<Model>> QueryAsync<Model>(string sql)
         {
-            return await DbConnection.QueryAsync<Model>(sql, null);
+            return await DbConnection.QueryAsync<Model>(sql, null, _session.Transaction);
         }
+
         /// <summary>
         /// 
         /// </summary>
@@ -46,8 +49,8 @@ namespace GlueFramework.Core.DataLayer
         /// <returns></returns>
         protected IPartitionRepository<Model> GetPartitionRepository<Model>() where Model : PartitionModelBase
         {
-            return new PartitionedRepository<Model>(_dbConnectionAccessor.CreateConnection(),
-                _tableNamePrefixProvider);
+            return new PartitionedRepository<Model>(_session.Connection, _session.Transaction, _tableNamePrefixProvider);
         }
     }
+
 }

@@ -17,14 +17,14 @@ namespace GlueFramework.OutboxModule.Services
     public sealed class OutboxAutoEnqueueEventBusDecorator : IEventBus
     {
         private readonly InProcEventBus _inner;
-        private readonly IOutboxStore _outbox;
+        private readonly OutboxService _outbox;
         private readonly ISiteService _siteService;
         private readonly IOptions<OutboxOptions> _configOptions;
         private readonly ILogger<OutboxAutoEnqueueEventBusDecorator> _logger;
 
         public OutboxAutoEnqueueEventBusDecorator(
             InProcEventBus inner,
-            IOutboxStore outbox,
+            OutboxService outbox,
             ISiteService siteService,
             IOptions<OutboxOptions> configOptions,
             ILogger<OutboxAutoEnqueueEventBusDecorator> logger)

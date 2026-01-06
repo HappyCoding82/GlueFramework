@@ -7,7 +7,7 @@ namespace GlueFramework.CustomSysSettingsModule.DataLayers
 {
     public class SiteSettingsDAL : DALBase, ISiteSettingsDAL
     {
-        public SiteSettingsDAL(IDbConnectionAccessor dbConnectionAccessor, IDataTablePrefixProvider tablePrefixProvider) : base(dbConnectionAccessor, tablePrefixProvider)
+        public SiteSettingsDAL(IDbSession dbSession, IDataTablePrefixProvider tablePrefixProvider) : base(dbSession, tablePrefixProvider)
         {
         }
 

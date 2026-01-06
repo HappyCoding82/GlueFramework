@@ -11,11 +11,11 @@ using GlueFramework.Core.DataLayer;
 
 namespace GlueFramework.OutboxModule.Infrastructure
 {
-    public sealed class SqlOutboxStore : DALBase ,IOutboxStore
+    public sealed class SqlOutboxStore : DALBase , IOutboxStore
     {
 
 
-        public SqlOutboxStore(IDbConnectionAccessor db, IDataTablePrefixProvider provider) : base(db, provider)
+        public SqlOutboxStore(IDbSession dbSession, IDataTablePrefixProvider provider) : base(dbSession, provider)
         {
         
         }

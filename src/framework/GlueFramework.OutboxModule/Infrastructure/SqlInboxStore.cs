@@ -13,10 +13,8 @@ namespace GlueFramework.OutboxModule.Infrastructure
 {
     public sealed class SqlInboxStore : DALBase, IInboxStore
     {
-        private readonly IDbConnectionAccessor _db;
-        private readonly IDataTablePrefixProvider _prefix;
 
-        public SqlInboxStore(IDbConnectionAccessor db, IDataTablePrefixProvider provider): base(db, provider)
+        public SqlInboxStore(IDbSession dbSession, IDataTablePrefixProvider provider): base(dbSession, provider)
         {
         
         }
