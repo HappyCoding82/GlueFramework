@@ -105,7 +105,22 @@ namespace GlueFramework.AuditLogModule.Controllers
             // IMPORTANT: SqlBuilder_Base.BuildQuery(FilterOptions<T>) expects a full ORDER BY clause here
             // because it injects it into ROW_NUMBER() OVER({orderby}).
             var orderPart = $"ORDER BY {safeSort} {(desc ? "desc" : "asc")}";
-            var filter = new FilterOptions<AuditLogRecord>(where, pager, new List<string> { orderPart });
+            PagedFilterOptions<AuditLogRecord> filter;
+            switch (safeSort)
+            {
+                case "ElapsedMs":
+                    filter = new PagedFilterOptions<AuditLogRecord>(where, pager, x => x.ElapsedMs, desc);
+                    break;
+                case "Success":
+                    filter = new PagedFilterOptions<AuditLogRecord>(where, pager, x => x.Success, desc);
+                    break;
+                case "CorrelationId":
+                    filter = new PagedFilterOptions<AuditLogRecord>(where, pager, x => x.CorrelationId, desc);
+                    break;
+                default:
+                    filter = new PagedFilterOptions<AuditLogRecord>(where, pager, x => x.CreatedUtc, desc);
+                    break;
+            }
 
             var result = await repo.PagerSearchAsync(filter);
 

@@ -12,7 +12,7 @@ namespace GlueFramework.Core.ORM
 {
     public abstract class SqlBuilder_Base<T> where T : class
     {
-       
+
         protected string _typeName = "";
         protected TableMapping _tbMapping = null;
         protected string _tablePrefix = string.Empty;
@@ -64,7 +64,7 @@ namespace GlueFramework.Core.ORM
                 {
                     _schema = ts.Schema;
                 }
-                
+
             }
         }
 
@@ -79,6 +79,37 @@ namespace GlueFramework.Core.ORM
                 throw new ArgumentException($"'{nameof(rawName)}' must not contain '.' because schema qualification is handled by {nameof(TableNameForSql)}.", nameof(rawName));
 
             return GetNamePrefix() + rawName + GetNameSuffix();
+        }
+
+        private string BuildOrderByClauseFromExpressions(PagedFilterOptions<T> filterOpt)
+        {
+            var exprs = filterOpt.OrderByExpressions;
+            if (exprs == null || exprs.Count == 0)
+                return string.Empty;
+
+            var parts = new List<string>();
+            foreach (var ob in exprs)
+            {
+                var body = ob.KeySelector.Body;
+                if (body is UnaryExpression ue && ue.NodeType == ExpressionType.Convert)
+                    body = ue.Operand;
+
+                if (body is not MemberExpression me)
+                    throw new NotSupportedException($"OrderBy expression must be a member access, got: {ob.KeySelector}");
+
+                var memberName = me.Member.Name;
+                var prop = _tbMapping.PropMappings.FirstOrDefault(p =>
+                    p.PropertyName.Equals(memberName, StringComparison.OrdinalIgnoreCase));
+                var fieldName = prop?.FieldName ?? memberName;
+
+                var direction = ob.Desc ? "DESC" : "ASC";
+                parts.Add($"{PopulateName(fieldName)} {direction}");
+            }
+
+            if (parts.Count == 0)
+                return string.Empty;
+
+            return "ORDER BY " + string.Join(", ", parts);
         }
         protected abstract string GetSelectByPagerSql(string filter, string orderby, int pageIndex, int pageSize);
         public abstract string GetSelectTopRecordsSql(int number);
@@ -105,13 +136,13 @@ namespace GlueFramework.Core.ORM
         public virtual string GetInsertSql()
         {
 
-                string[] strSqlNames = _tbMapping.PropMappings.Where(x => x.AutoGenerate == false).Select(p => $"{PopulateName( p.FieldName ) }").ToArray();
-                string strSqlName = string.Join(",", strSqlNames);
-                string[] strSqlValues = _tbMapping.PropMappings.Where(x => x.AutoGenerate == false).Select(P => $"{P.ParameterName}").ToArray();
-                string strSqlValue = string.Join(",", strSqlValues);
-                string insertSql = $"insert into {TableNameForSql()} ( {strSqlName} ) values ({strSqlValue});";
+            string[] strSqlNames = _tbMapping.PropMappings.Where(x => x.AutoGenerate == false).Select(p => $"{PopulateName(p.FieldName)}").ToArray();
+            string strSqlName = string.Join(",", strSqlNames);
+            string[] strSqlValues = _tbMapping.PropMappings.Where(x => x.AutoGenerate == false).Select(P => $"{P.ParameterName}").ToArray();
+            string strSqlValue = string.Join(",", strSqlValues);
+            string insertSql = $"insert into {TableNameForSql()} ( {strSqlName} ) values ({strSqlValue});";
 
-                return insertSql;
+            return insertSql;
         }
 
 
@@ -132,7 +163,8 @@ namespace GlueFramework.Core.ORM
         {
             var getters = PreCompileGetterHelper<T>.Getters;
             List<Func<T, object>> rs = new List<Func<T, object>>();
-            props.ForEach(y => {
+            props.ForEach(y =>
+            {
                 rs.Add(getters.First(x => x.Key == y.PropertyName).Value);
             });
             return rs;
@@ -165,15 +197,15 @@ namespace GlueFramework.Core.ORM
             return $" WHERE {string.Join(" AND ", filterStatements)}";
         }
 
-        public  string GetSelectByKeySql()
+        public string GetSelectByKeySql()
         {
-            var fieldListStr = string.Join(",", _tbMapping.PropMappings.Select(x => x.FieldName == x.PropertyName ? 
+            var fieldListStr = string.Join(",", _tbMapping.PropMappings.Select(x => x.FieldName == x.PropertyName ?
             $"{PopulateName(x.PropertyName)}" : $"{PopulateName(x.FieldName)} as {PopulateName(x.PropertyName)}").ToArray());
             var selectStatement = $"Select {fieldListStr} FROM {TableNameForSql()} {GetKeyFilter()}; ";
 
             return selectStatement;
         }
-        public  string GetUpdateSql()
+        public string GetUpdateSql()
         {
             var fieldListStr = string.Join(",", _tbMapping.PropMappings.Where(x => x.AutoGenerate == false && x.IsKey == false).
                 Select(x => $"{PopulateName(x.FieldName)} = @{x.PropertyName}").ToArray());
@@ -304,7 +336,7 @@ namespace GlueFramework.Core.ORM
             return insertSql + BuildSelectStatement() + returnFilter;
         }
 
-       
+
 
         #region "Partition operation"
 
@@ -480,13 +512,14 @@ namespace GlueFramework.Core.ORM
             return new KeyValuePair<string, DynamicParameters>(sql, parameter);
         }
 
-        public KeyValuePair<string, DynamicParameters> BuildQuery(FilterOptions<T> filterOpt)
+        public KeyValuePair<string, DynamicParameters> BuildQuery(PagedFilterOptions<T> filterOpt)
         {
 
             var parameter = new DynamicParameters();
             var wherePart = GetWherePart(filterOpt.WhereClause);
             string whereStatement = wherePart.HasSql ? $" WHERE {wherePart.Sql}" : string.Empty;
-            string sql = GetCountSql(wherePart.Sql) + GetSelectByPagerSql(whereStatement, string.Join(" ",filterOpt.OrderByStatements), filterOpt.Pager.PageIndex, filterOpt.Pager.PageSize);
+            var orderby = BuildOrderByClauseFromExpressions(filterOpt);
+            string sql = GetCountSql(wherePart.Sql) + GetSelectByPagerSql(whereStatement, orderby, filterOpt.Pager.PageIndex, filterOpt.Pager.PageSize);
             foreach (var param in wherePart.Parameters)
             {
                 parameter.Add(param.Key, param.Value, param.Type);
@@ -499,7 +532,7 @@ namespace GlueFramework.Core.ORM
             var parameter = new DynamicParameters();
             var wherePart = GetWherePart(expression);
             string whereStatement = wherePart.HasSql ? $" WHERE {wherePart.Sql}" : string.Empty;
-            var sql =  $"Delete from {TableNameForSql()} {whereStatement}";
+            var sql = $"Delete from {TableNameForSql()} {whereStatement}";
             foreach (var param in wherePart.Parameters)
             {
                 parameter.Add(param.Key, param.Value, param.Type);
@@ -584,4 +617,3 @@ namespace GlueFramework.Core.ORM
         }
     }
 }
-

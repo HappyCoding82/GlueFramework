@@ -212,5 +212,39 @@ namespace GlueFramework.CoreTests.Sql
             SqlAssertHelpers.AreSqlEqual(expected, cmd.Key);
             CollectionAssert.AreEquivalent(new[] { "Name", "Price" }, cmd.Value.ParameterNames.ToArray());
         }
+        [DataTable("Card")]
+        private sealed class DemoCard
+        {
+            [DBField("Id", isKeyField: true, autogenerate: true)]
+            public int Id { get; set; }
+
+            [DBField("CreatedUtc")]
+            public DateTime CreatedUtc { get; set; }
+        }
+
+
+        [TestMethod]
+        public void PagerQuery_GeneratesPostgreSql_WithLambdaOrderByDescending()
+        {
+            using var conn = new FakeNpgsqlConnection();
+            var repo = new Repository<DemoCard>(conn, new FixedTenantTableSettingsProvider(prefix: "", schema: "cm"));
+            var sqlBuilder = GetSqlBuilder(repo);
+
+            var opts = new PagedFilterOptions<DemoCard>(
+                whereClause: x => x.Id >= 0,
+                pager: new PagerInfo { PageIndex = 1, PageSize = 20 },
+                orderBy: x => x.CreatedUtc,
+                desc: true);
+
+            var cmd = sqlBuilder.BuildQuery(opts);
+
+            const string expected =
+                "SELECT COUNT(1) FROM \"cm\".\"Card\"  WHERE (\"cm\".\"Card\".\"Id\" >= 0);" +
+                "SELECT \"Id\",\"CreatedUtc\" FROM \"cm\".\"Card\"  WHERE (\"cm\".\"Card\".\"Id\" >= 0) ORDER BY \"CreatedUtc\" DESC LIMIT 20 OFFSET 0";
+
+            SqlAssertHelpers.AreSqlEqual(expected, cmd.Key);
+        }
+
+
     }
 }

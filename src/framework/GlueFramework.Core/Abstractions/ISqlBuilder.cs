@@ -38,14 +38,11 @@ namespace GlueFramework.Core.Abstractions
         //string GetBatchInsertSql();
         WherePart GetWherePart(Expression<Func<Model, bool>> expression);
         KeyValuePair<string, DynamicParameters> BuildQuery(Expression<Func<Model, bool>> expression);
-        KeyValuePair<string, DynamicParameters> BuildQuery(FilterOptions<Model> filterOpt);
+        KeyValuePair<string, DynamicParameters> BuildQuery(PagedFilterOptions<Model> filterOpt);
         KeyValuePair<string, DynamicParameters> BuildQueryTop(Expression<Func<Model, bool>> expression, int number);
         KeyValuePair<string, DynamicParameters> BuildDeleteSql(Expression<Func<Model, bool>> expression);
-
         KeyValuePair<string, DynamicParameters> BuildPartialUpdateSql(Model keyModel, IReadOnlyDictionary<string, object?> changes);
-
         KeyValuePair<string, DynamicParameters> BuildPartialInsertSql(IReadOnlyDictionary<string, object?> changes);
-
         KeyValuePair<string, DynamicParameters> BuildBatchInsertSql(List<Model> models);
     }
 }

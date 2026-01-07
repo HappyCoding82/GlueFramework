@@ -190,9 +190,9 @@ namespace GlueFramework.Core.UOW
             return await FirstOrDefaultAsync(sql);
         }
 
-        public async Task<PagerResult<Model>> PagerSearchAsync(FilterOptions<Model> opts)
+        public async Task<PagerResult<Model>> PagerSearchAsync(PagedFilterOptions<Model> opts)
         {
-            var cmd =CurrentSqlBuilder.BuildQuery( opts);
+            var cmd = CurrentSqlBuilder.BuildQuery(opts);
             PagerResult<Model> rs = new PagerResult<Model>();
             using (var reader = await QueryMultipleAsync(cmd.Key, cmd.Value))
             {

@@ -32,7 +32,7 @@ namespace GlueFramework.Core.Abstractions
         Task<IEnumerable<Model>> QueryTopAsync(Expression<Func<Model, bool>> exp, int number);
 
         Task<IEnumerable<Model>> QueryAsync(Expression<Func<Model, bool>> expression);
-        Task<PagerResult<Model>> PagerSearchAsync(FilterOptions<Model> opts);
+        Task<PagerResult<Model>> PagerSearchAsync(PagedFilterOptions<Model> opts);
 
         Task<Model> GetByKeyAsync(Model data);
 
