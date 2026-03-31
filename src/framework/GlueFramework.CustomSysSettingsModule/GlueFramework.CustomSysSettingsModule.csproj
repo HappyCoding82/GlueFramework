@@ -6,6 +6,8 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+     <Title>Glue Framework Custom Sys Settings </Title>
+     <Version>1.0.1</Version>
   </PropertyGroup>
 
   <ItemGroup>
