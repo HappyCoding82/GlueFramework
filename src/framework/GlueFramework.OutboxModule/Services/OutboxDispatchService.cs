@@ -4,6 +4,7 @@ using GlueFramework.Core.UOW;
 using GlueFramework.OutboxModule.Infrastructure;
 using GlueFramework.OutboxModule.Options;
 using GlueFramework.OutboxModule.Settings;
+using GlueFramework.Core.Services;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OrchardCore.Settings;
@@ -104,7 +105,16 @@ namespace GlueFramework.OutboxModule.Services
                     if (evt == null)
                         throw new InvalidOperationException($"Cannot deserialize event payload. Type={msg.Type}");
 
-                    await eventBus.PublishNowRequiredAsync((dynamic)evt, cancellationToken);
+                    var prev = EventDispatchContext.MessageId;
+                    EventDispatchContext.MessageId = msg.MessageId;
+                    try
+                    {
+                        await eventBus.PublishNowRequiredAsync((dynamic)evt, cancellationToken);
+                    }
+                    finally
+                    {
+                        EventDispatchContext.MessageId = prev;
+                    }
                     await outbox.MarkSucceededAsync(msg.MessageId, DateTimeOffset.UtcNow, cancellationToken);
                 }
                 catch (Exception ex)

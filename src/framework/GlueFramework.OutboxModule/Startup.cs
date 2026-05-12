@@ -6,6 +6,7 @@ using OrchardCore.Modules;
 using GlueFramework.Core.Services;
 using GlueFramework.OutboxModule.Options;
 using GlueFramework.OutboxModule.Services;
+using GlueFramework.Core.Abstractions.Outbox;
 using OrchardCore.Data.Migration;
 using GlueFramework.OutboxModule.Migrations;
 using OrchardCore.Navigation;
@@ -41,6 +42,7 @@ namespace GlueFramework.OutboxModule
             //services.TryAddScoped<IOutboxStore, SqlOutboxStore>();
             //services.TryAddScoped<IInboxStore, SqlInboxStore>();
             services.TryAddScoped<OutboxService>();
+            services.TryAddScoped<IInboxStore, InboxService>();
             services.TryAddScoped<IOutboxEnqueuer, OutboxEnqueuer>();
             services.TryAddScoped<OutboxDispatchService>();
             services.TryAddScoped<OutboxAutoEnqueueEventBusDecorator>();

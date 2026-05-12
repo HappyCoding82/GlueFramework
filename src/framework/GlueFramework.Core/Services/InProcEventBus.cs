@@ -1,4 +1,5 @@
 using GlueFramework.Core.Abstractions;
+using GlueFramework.Core.Abstractions.Outbox;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
@@ -51,6 +52,11 @@ namespace GlueFramework.Core.Services
             if (handlers.Length == 0)
                 return;
 
+            var messageId = EventDispatchContext.MessageId;
+            IInboxStore? inbox = null;
+            if (messageId.HasValue)
+                inbox = scope.ServiceProvider.GetService<IInboxStore>();
+
             List<Exception>? exceptions = null;
 
             foreach (var h in handlers)
@@ -59,6 +65,14 @@ namespace GlueFramework.Core.Services
 
                 try
                 {
+                    if (messageId.HasValue && inbox != null)
+                    {
+                        var handlerName = h.GetType().FullName ?? h.GetType().Name;
+                        var canHandle = await inbox.TryBeginHandleAsync(messageId.Value, handlerName, DateTimeOffset.UtcNow, cancellationToken).ConfigureAwait(false);
+                        if (!canHandle)
+                            continue;
+                    }
+
                     await h.HandleAsync(evt, cancellationToken).ConfigureAwait(false);
                 }
                 catch (Exception ex)
