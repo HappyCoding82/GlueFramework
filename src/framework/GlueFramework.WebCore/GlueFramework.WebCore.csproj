@@ -8,6 +8,7 @@
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
 		<Title>Glue Framework Web Core</Title> 
 		<Version>1.0.1</Version>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -67,6 +68,10 @@
 
 	<ItemGroup>
 	  <ProjectReference Include="..\GlueFramework.Core\GlueFramework.Core.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Include="README.md" Pack="true" PackagePath="\"/>
 	</ItemGroup>
 
 </Project>

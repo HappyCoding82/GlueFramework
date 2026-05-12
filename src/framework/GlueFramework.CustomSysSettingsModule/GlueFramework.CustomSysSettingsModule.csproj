@@ -8,6 +8,7 @@
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
      <Title>Glue Framework Custom Sys Settings </Title>
      <Version>1.0.1</Version>
+     <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
   <ItemGroup>
@@ -30,6 +31,10 @@
   <ItemGroup>
     <ProjectReference Include="..\GlueFramework.OrchardCoreModule\GlueFramework.OrchardCoreModule.csproj" />
     <ProjectReference Include="..\GlueFramework.WebCore\GlueFramework.WebCore.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="\"/>
   </ItemGroup>
 
 </Project>

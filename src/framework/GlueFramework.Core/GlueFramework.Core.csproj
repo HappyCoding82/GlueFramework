@@ -7,6 +7,7 @@
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
 		<Title>Glue Framework Core</Title>
 		<Version>1.0.1</Version>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -28,6 +29,10 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\GlueFramework.AuditLog.Abstractions\GlueFramework.AuditLog.Abstractions.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Include="Readme.md" Pack="true" PackagePath="\"/>
 	</ItemGroup>
 
 </Project>

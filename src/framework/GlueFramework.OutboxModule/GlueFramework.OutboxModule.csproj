@@ -8,6 +8,7 @@
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
 		<Title>Glue Framework Outbox Module</Title>
 		<Version>1.0.1</Version>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
@@ -40,6 +41,10 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\GlueFramework.OrchardCoreModule\GlueFramework.OrchardCoreModule.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Include="README.md" Pack="true" PackagePath="\"/>
 	</ItemGroup>
 
 </Project>
