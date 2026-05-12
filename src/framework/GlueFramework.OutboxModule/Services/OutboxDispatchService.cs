@@ -54,8 +54,22 @@ namespace GlueFramework.OutboxModule.Services
 
             await DispatchOnceAsync(outbox, _eventBus, opt, cancellationToken);
 
+            if (opt.EnableOutboxCleanup)
+                await CleanupOutboxAsync(outbox, opt, cancellationToken);
+
             if (opt.EnableInboxCleanup)
                 await CleanupInboxAsync(inbox, opt, cancellationToken);
+        }
+
+        private async Task CleanupOutboxAsync(SqlOutboxStore outbox, OutboxSettings opt, CancellationToken cancellationToken)
+        {
+            if (opt.OutboxRetentionDays <= 0)
+                return;
+
+            var olderThan = DateTimeOffset.UtcNow.AddDays(-opt.OutboxRetentionDays);
+            var deleted = await outbox.CleanupSucceededAsync(olderThan, cancellationToken);
+            if (deleted > 0)
+                _logger.LogInformation("Outbox cleanup removed {Count} records", deleted);
         }
 
         private async Task CleanupInboxAsync(IInboxStore inbox, OutboxSettings opt, CancellationToken cancellationToken)
@@ -109,6 +123,8 @@ namespace GlueFramework.OutboxModule.Services
                 AutoEnqueueIntegrationEvents = _configOptions.Value.AutoEnqueueIntegrationEvents,
                 DispatchIntervalSeconds = _configOptions.Value.DispatchIntervalSeconds,
                 BatchSize = _configOptions.Value.BatchSize,
+                OutboxRetentionDays = _configOptions.Value.OutboxRetentionDays,
+                EnableOutboxCleanup = _configOptions.Value.EnableOutboxCleanup,
                 InboxRetentionDays = _configOptions.Value.InboxRetentionDays,
                 EnableInboxCleanup = _configOptions.Value.EnableInboxCleanup,
             };
@@ -121,6 +137,8 @@ namespace GlueFramework.OutboxModule.Services
                 merged.AutoEnqueueIntegrationEvents = settings.AutoEnqueueIntegrationEvents;
                 merged.DispatchIntervalSeconds = settings.DispatchIntervalSeconds;
                 merged.BatchSize = settings.BatchSize;
+                merged.OutboxRetentionDays = settings.OutboxRetentionDays;
+                merged.EnableOutboxCleanup = settings.EnableOutboxCleanup;
                 merged.InboxRetentionDays = settings.InboxRetentionDays;
                 merged.EnableInboxCleanup = settings.EnableInboxCleanup;
             }

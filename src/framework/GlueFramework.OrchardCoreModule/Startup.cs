@@ -37,7 +37,7 @@ namespace GlueFramework.OrchardCoreModule
             services.Configure<SlowSqlOptions>(Configuration.GetSection("Diagnosis:SlowSql"));
             services.AddTransient<GlueFramework.Core.Abstractions.IDbConnectionAccessor, AdapterDbAccessor>();
             services.AddTransient<IDataTablePrefixProvider, TenantTablePrefixProvider>();
-            services.AddSingleton<IDALFactory, DALFactory>();
+            services.AddScoped<IDALFactory, DALFactory>();
         }
 
         public override void Configure(IApplicationBuilder builder, IEndpointRouteBuilder routes, IServiceProvider serviceProvider)

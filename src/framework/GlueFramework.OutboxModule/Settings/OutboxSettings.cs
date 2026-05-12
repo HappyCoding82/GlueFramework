@@ -10,6 +10,10 @@ namespace GlueFramework.OutboxModule.Settings
 
         public int BatchSize { get; set; } = 50;
 
+        public int OutboxRetentionDays { get; set; } = 3;
+
+        public bool EnableOutboxCleanup { get; set; } = true;
+
         public int InboxRetentionDays { get; set; } = 30;
 
         public bool EnableInboxCleanup { get; set; } = true;

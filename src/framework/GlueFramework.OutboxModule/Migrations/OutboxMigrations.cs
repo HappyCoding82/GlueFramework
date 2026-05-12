@@ -56,5 +56,33 @@ namespace GlueFramework.OutboxModule.Migrations
 
             return 1;
         }
+
+        public async Task<int> UpdateFrom1Async()
+        {
+            await SchemaBuilder.CreateTableAsync("OutboxMessageArchive", table => table
+                .Column<int>("Id", c => c.PrimaryKey().Identity())
+                .Column<string>("MessageId", c => c.WithLength(64))
+                .Column<string>("Type", c => c.WithLength(512))
+                .Column<string>("Payload", c => c.Unlimited())
+                .Column<System.DateTime>("OccurredUtc")
+                .Column<string>("Status", c => c.WithLength(32))
+                .Column<int>("TryCount")
+                .Column<System.DateTime>("LockedUntilUtc", c => c.Nullable())
+                .Column<System.DateTime>("NextRetryUtc", c => c.Nullable())
+                .Column<string>("LastError", c => c.Unlimited())
+                .Column<System.DateTime>("CreatedUtc")
+                .Column<System.DateTime>("UpdatedUtc")
+                .Column<System.DateTime>("ArchivedUtc")
+            );
+
+            await SchemaBuilder.AlterTableAsync("OutboxMessageArchive", table =>
+            {
+                table.CreateIndex("IDX_OutboxMessageArchive_MessageId", "MessageId");
+                table.CreateIndex("IDX_OutboxMessageArchive_Status", "Status");
+                table.CreateIndex("IDX_OutboxMessageArchive_ArchivedUtc", "ArchivedUtc");
+            });
+
+            return 2;
+        }
     }
 }

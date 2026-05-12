@@ -44,6 +44,8 @@ namespace GlueFramework.OutboxModule.Controllers
                 s.AutoEnqueueIntegrationEvents = model.AutoEnqueueIntegrationEvents;
                 s.DispatchIntervalSeconds = model.DispatchIntervalSeconds;
                 s.BatchSize = model.BatchSize;
+                s.OutboxRetentionDays = model.OutboxRetentionDays;
+                s.EnableOutboxCleanup = model.EnableOutboxCleanup;
                 s.InboxRetentionDays = model.InboxRetentionDays;
                 s.EnableInboxCleanup = model.EnableInboxCleanup;
             });

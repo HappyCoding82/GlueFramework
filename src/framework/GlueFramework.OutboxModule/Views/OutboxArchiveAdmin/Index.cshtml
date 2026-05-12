@@ -1,0 +1,47 @@
+@model GlueFramework.OutboxModule.ViewModels.OutboxArchiveIndexViewModel
+
+<h1>Outbox Archive</h1>
+
+<form method="get" class="mb-3">
+    <div class="row g-2">
+        <div class="col-md-2">
+            <label class="form-label">Take</label>
+            <input class="form-control" name="take" value="@Model.Take" />
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">Status</label>
+            <input class="form-control" name="status" value="@(Model.Status ?? "")" />
+        </div>
+        <div class="col-md-2 align-self-end">
+            <button class="btn btn-primary" type="submit">Search</button>
+        </div>
+    </div>
+</form>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>ArchivedUtc</th>
+            <th>MessageId</th>
+            <th>Status</th>
+            <th>Type</th>
+            <th>TryCount</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+    @foreach (var x in Model.Items)
+    {
+        <tr>
+            <td>@x.ArchivedUtc.ToString("u")</td>
+            <td><code>@x.MessageId</code></td>
+            <td>@x.Status</td>
+            <td style="max-width: 520px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">@x.Type</td>
+            <td>@x.TryCount</td>
+            <td>
+                <a class="btn btn-sm btn-secondary" href="@Url.Action("Detail", "OutboxArchiveAdmin", new { area = "GlueFramework.OutboxModule", messageId = Guid.ParseExact(x.MessageId, "N") })">Detail</a>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>

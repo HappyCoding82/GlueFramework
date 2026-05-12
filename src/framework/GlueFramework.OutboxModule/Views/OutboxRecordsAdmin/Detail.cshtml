@@ -1,0 +1,48 @@
+@model GlueFramework.OutboxModule.ViewModels.OutboxRecordDetailViewModel
+
+<h1>Outbox Record Detail</h1>
+
+<table class="table">
+    <tr><th>MessageId</th><td><code>@Model.Item.MessageId.ToString("N")</code></td></tr>
+    <tr><th>Status</th><td>@Model.Item.Status</td></tr>
+    <tr><th>Type</th><td><code>@Model.Item.Type</code></td></tr>
+    <tr><th>OccurredUtc</th><td>@Model.Item.OccurredUtc.ToString("u")</td></tr>
+    <tr><th>TryCount</th><td>@Model.Item.TryCount</td></tr>
+    <tr><th>LockedUntilUtc</th><td>@(Model.Item.LockedUntilUtc?.ToString("u") ?? "")</td></tr>
+    <tr><th>NextRetryUtc</th><td>@(Model.Item.NextRetryUtc?.ToString("u") ?? "")</td></tr>
+</table>
+
+@if (!string.IsNullOrWhiteSpace(Model.Item.LastError))
+{
+    <h2>LastError</h2>
+    <pre style="white-space: pre-wrap">@Model.Item.LastError</pre>
+}
+
+<h2>Payload</h2>
+<pre style="white-space: pre-wrap">@Model.Item.Payload</pre>
+
+<hr />
+
+<h2>Actions</h2>
+
+<form method="post" asp-action="UpdateStatus" class="mb-2">
+    @Html.AntiForgeryToken()
+    <input type="hidden" name="messageId" value="@Model.Item.MessageId" />
+
+    <div class="row g-2">
+        <div class="col-md-3">
+            <label class="form-label">Set Status</label>
+            <input class="form-control" name="status" value="@Model.Item.Status" />
+        </div>
+        <div class="col-md-2 align-self-end">
+            <button class="btn btn-primary" type="submit">Update</button>
+        </div>
+    </div>
+</form>
+
+<form method="post" asp-action="Archive" onsubmit="return confirm('Archive this outbox record?');">
+    @Html.AntiForgeryToken()
+    <input type="hidden" name="messageId" value="@Model.Item.MessageId" />
+    <button class="btn btn-warning" type="submit">Archive</button>
+    <a class="btn btn-secondary" href="@Url.Action("Index", "OutboxRecordsAdmin", new { area = "GlueFramework.OutboxModule" })">Back</a>
+</form>

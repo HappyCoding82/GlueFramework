@@ -26,6 +26,16 @@
     </div>
 
     <div class="mb-3">
+        <label class="form-label" asp-for="OutboxRetentionDays"></label>
+        <input class="form-control" asp-for="OutboxRetentionDays" />
+    </div>
+
+    <div class="mb-3 form-check">
+        <input class="form-check-input" type="checkbox" asp-for="EnableOutboxCleanup" />
+        <label class="form-check-label" asp-for="EnableOutboxCleanup"></label>
+    </div>
+
+    <div class="mb-3">
         <label class="form-label" asp-for="InboxRetentionDays"></label>
         <input class="form-control" asp-for="InboxRetentionDays" />
     </div>
