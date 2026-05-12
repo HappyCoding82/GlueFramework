@@ -38,19 +38,16 @@ jobs:
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "Publishing version: $VERSION"
 
-      - name: Restore
-        run: dotnet restore src/framework/GlueFramework.Core/GlueFramework.Core.sln || dotnet restore
-
       - name: Build all projects
         run: |
-          dotnet build src/framework/GlueFramework.AuditLog.Abstractions/GlueFramework.AuditLog.Abstractions.csproj -c Release --no-restore
-          dotnet build src/framework/GlueFramework.AuditLogModule/GlueFramework.AuditLogModule.csproj -c Release --no-restore
-          dotnet build src/framework/GlueFramework.Core/GlueFramework.Core.csproj -c Release --no-restore
-          dotnet build src/framework/GlueFramework.OrchardCore.Observability/GlueFramework.OrchardCore.Observability.csproj -c Release --no-restore
-          dotnet build src/framework/GlueFramework.OrchardCoreModule/GlueFramework.OrchardCoreModule.csproj -c Release --no-restore
-          dotnet build src/framework/GlueFramework.OutboxModule/GlueFramework.OutboxModule.csproj -c Release --no-restore
-          dotnet build src/framework/GlueFramework.WebCore/GlueFramework.WebCore.csproj -c Release --no-restore
-          dotnet build src/framework/GlueFramework.CustomSysSettingsModule/GlueFramework.CustomSysSettingsModule.csproj -c Release --no-restore
+          dotnet build src/framework/GlueFramework.AuditLog.Abstractions/GlueFramework.AuditLog.Abstractions.csproj -c Release --restore
+          dotnet build src/framework/GlueFramework.AuditLogModule/GlueFramework.AuditLogModule.csproj -c Release --restore
+          dotnet build src/framework/GlueFramework.Core/GlueFramework.Core.csproj -c Release --restore
+          dotnet build src/framework/GlueFramework.OrchardCore.Observability/GlueFramework.OrchardCore.Observability.csproj -c Release --restore
+          dotnet build src/framework/GlueFramework.OrchardCoreModule/GlueFramework.OrchardCoreModule.csproj -c Release --restore
+          dotnet build src/framework/GlueFramework.OutboxModule/GlueFramework.OutboxModule.csproj -c Release --restore
+          dotnet build src/framework/GlueFramework.WebCore/GlueFramework.WebCore.csproj -c Release --restore
+          dotnet build src/framework/GlueFramework.CustomSysSettingsModule/GlueFramework.CustomSysSettingsModule.csproj -c Release --restore
 
       - name: Pack all projects
         run: |
