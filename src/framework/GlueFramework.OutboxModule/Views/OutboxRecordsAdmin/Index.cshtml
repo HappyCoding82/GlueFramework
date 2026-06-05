@@ -1,0 +1,49 @@
+@model GlueFramework.OutboxModule.ViewModels.OutboxRecordsIndexViewModel
+
+<h1>Outbox Records</h1>
+
+<form method="get" class="mb-3">
+    <div class="row g-2">
+        <div class="col-md-2">
+            <label class="form-label">Take</label>
+            <input class="form-control" name="take" value="@Model.Take" />
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">Status</label>
+            <input class="form-control" name="status" value="@(Model.Status ?? "")" />
+        </div>
+        <div class="col-md-2 align-self-end">
+            <button class="btn btn-primary" type="submit">Search</button>
+        </div>
+    </div>
+</form>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>OccurredUtc</th>
+            <th>MessageId</th>
+            <th>Status</th>
+            <th>Type</th>
+            <th>TryCount</th>
+            <th>LastError</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+    @foreach (var x in Model.Items)
+    {
+        <tr>
+            <td>@x.OccurredUtc.ToString("u")</td>
+            <td><code>@x.MessageId.ToString("N")</code></td>
+            <td>@x.Status</td>
+            <td style="max-width: 420px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">@x.Type</td>
+            <td>@x.TryCount</td>
+            <td style="max-width: 520px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">@(x.LastError ?? "")</td>
+            <td>
+                <a class="btn btn-sm btn-secondary" href="@Url.Action("Detail", "OutboxRecordsAdmin", new { area = "GlueFramework.OutboxModule", messageId = x.MessageId })">Detail</a>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>

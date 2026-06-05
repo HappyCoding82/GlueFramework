@@ -1,0 +1,36 @@
+﻿@{
+    ViewData["Title"] = "KeyVault Management";
+}
+
+<h2>KeyVault Management</h2>
+
+<div>
+    <h3>Save Key</h3>
+    <form method="post" asp-action="Save">
+        <label>Key:</label>
+        <input type="text" name="key" required />
+        <label>Value:</label>
+        <input type="text" name="value" required />
+        <button type="submit">Save KeyVault</button>
+    </form>
+</div>
+
+<div>
+    <h3>Read Key</h3>
+    <form method="post" asp-action="Load">
+        <label>Key:</label>
+        <input type="text" name="key" required />
+        <button type="submit">Read KeyVault</button>
+    </form>
+</div>
+
+@if (ViewData["Message"] != null)
+{
+    <div style="margin-top:10px; font-weight:bold;">
+        @ViewData["Message"]
+        @if (ViewData["Value"] != null)
+        {
+            <div style="margin-top:5px;">@ViewData["Value"]</div>
+        }
+    </div>
+}

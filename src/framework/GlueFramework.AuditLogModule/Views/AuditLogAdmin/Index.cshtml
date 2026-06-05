@@ -1,0 +1,165 @@
+@{
+}
+
+<h1>Audit Logs</h1>
+
+<div class="mb-3">
+    <div class="row g-2">
+        <div class="col-md-2">
+            <label class="form-label">From (UTC)</label>
+            <input class="form-control" id="fromUtc" placeholder="2025-12-23 00:00:00" />
+        </div>
+        <div class="col-md-2">
+            <label class="form-label">To (UTC)</label>
+            <input class="form-control" id="toUtc" placeholder="2025-12-23 23:59:59" />
+        </div>
+        <div class="col-md-2">
+            <label class="form-label">Action contains</label>
+            <input class="form-control" id="actionContains" />
+        </div>
+        <div class="col-md-2">
+            <label class="form-label">User contains</label>
+            <input class="form-control" id="userContains" />
+        </div>
+        <div class="col-md-2">
+            <label class="form-label">CorrelationId</label>
+            <input class="form-control" id="correlationId" />
+        </div>
+        <div class="col-md-2">
+            <label class="form-label">Success</label>
+            <select class="form-select" id="success">
+                <option value="">(all)</option>
+                <option value="true">true</option>
+                <option value="false">false</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="mt-2">
+        <button class="btn btn-primary" id="btnSearch">Search</button>
+        <button class="btn btn-secondary" id="btnPrev">Prev</button>
+        <button class="btn btn-secondary" id="btnNext">Next</button>
+        <span class="ms-2" id="pagerInfo"></span>
+    </div>
+</div>
+
+<table class="table table-striped" id="tbl">
+    <thead>
+        <tr>
+            <th><a href="#" data-sort="CreatedUtc" class="sort">CreatedUtc</a></th>
+            <th>Action</th>
+            <th>User</th>
+            <th>Tenant</th>
+            <th><a href="#" data-sort="Success" class="sort">Success</a></th>
+            <th><a href="#" data-sort="ElapsedMs" class="sort">ElapsedMs</a></th>
+            <th>CorrelationId</th>
+        </tr>
+    </thead>
+    <tbody></tbody>
+</table>
+
+<hr />
+
+<h2>Cleanup</h2>
+<div class="row g-2">
+    <div class="col-md-3">
+        <label class="form-label">Delete before (UTC)</label>
+        <input class="form-control" id="cleanupBeforeUtc" placeholder="2025-01-01 00:00:00" />
+    </div>
+    <div class="col-md-2 align-self-end">
+        <button class="btn btn-danger" id="btnCleanup">Delete</button>
+    </div>
+</div>
+
+<script at="Foot">
+(function() {
+    let pageIndex = 1;
+    let pageSize = 20;
+    let sortBy = 'CreatedUtc';
+    let desc = true;
+
+    function qs(id) { return document.getElementById(id); }
+
+    function buildUrl() {
+        const p = new URLSearchParams();
+        if (qs('fromUtc').value) p.set('fromUtc', qs('fromUtc').value);
+        if (qs('toUtc').value) p.set('toUtc', qs('toUtc').value);
+        if (qs('actionContains').value) p.set('actionContains', qs('actionContains').value);
+        if (qs('userContains').value) p.set('userContains', qs('userContains').value);
+        if (qs('correlationId').value) p.set('correlationId', qs('correlationId').value);
+        if (qs('success').value) p.set('success', qs('success').value);
+        p.set('pageIndex', pageIndex);
+        p.set('pageSize', pageSize);
+        p.set('sortBy', sortBy);
+        p.set('desc', desc);
+        return '?'+p.toString();
+    }
+
+    async function load() {
+        const url = '@Url.Action("List", "AuditLogAdmin", new { area = "GlueFramework.AuditLogModule" })' + buildUrl();
+        const res = await fetch(url, { headers: { 'Accept': 'application/json' }});
+        if (!res.ok) {
+            qs('pagerInfo').innerText = 'Load failed: ' + res.status;
+            return;
+        }
+        const data = await res.json();
+        const tbody = qs('tbl').querySelector('tbody');
+        tbody.innerHTML = '';
+        for (const x of data.items) {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td>${x.createdUtc}</td><td>${x.action ?? ''}</td><td>${x.user ?? ''}</td><td>${x.tenant ?? ''}</td><td>${x.success}</td><td>${x.elapsedMs}</td><td>${x.correlationId ?? ''}</td>`;
+            tbody.appendChild(tr);
+        }
+        const totalPages = Math.max(1, Math.ceil(data.total / data.pageSize));
+        qs('pagerInfo').innerText = `Total=${data.total} Page=${data.pageIndex}/${totalPages}`;
+    }
+
+    qs('btnSearch').addEventListener('click', () => { pageIndex = 1; load(); });
+    qs('btnPrev').addEventListener('click', () => { pageIndex = Math.max(1, pageIndex - 1); load(); });
+    qs('btnNext').addEventListener('click', () => { pageIndex = pageIndex + 1; load(); });
+
+    document.querySelectorAll('a.sort').forEach(a => {
+        a.addEventListener('click', (e) => {
+            e.preventDefault();
+            const s = a.getAttribute('data-sort');
+            if (sortBy === s) {
+                desc = !desc;
+            } else {
+                sortBy = s;
+                desc = true;
+            }
+            pageIndex = 1;
+            load();
+        });
+    });
+
+    qs('btnCleanup').addEventListener('click', async () => {
+        const cutoff = qs('cleanupBeforeUtc').value;
+        if (!cutoff) return;
+        if (!confirm('Delete audit logs before ' + cutoff + ' (UTC)?')) return;
+
+        const url = '@Url.Action("CleanupBefore", "AuditLogAdmin", new { area = "GlueFramework.AuditLogModule" })';
+        const tokenEl = document.querySelector('input[name="__RequestVerificationToken"]');
+        const token = tokenEl ? tokenEl.value : '';
+
+        const form = new URLSearchParams();
+        form.set('cutoffUtc', cutoff);
+        if (token) form.set('__RequestVerificationToken', token);
+
+        const res = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: form.toString()
+        });
+        if (res.ok) {
+            pageIndex = 1;
+            await load();
+        }
+    });
+
+    load();
+})();
+
+</script>
+
+@Html.AntiForgeryToken()

@@ -1,0 +1,92 @@
+@model GlueFramework.OrchardCore.Observability.ViewModels.ObservabilitySettingsViewModel
+
+<h1>Observability Settings</h1>
+
+<div class="alert alert-secondary">Tenant: @(ViewBag.TenantName ?? "")</div>
+
+@if (TempData["StatusMessage"] != null)
+{
+    <div class="alert alert-info">@TempData["StatusMessage"]</div>
+}
+
+@if (TempData["SavedReadback"] != null)
+{
+    <div class="alert alert-warning">@TempData["SavedReadback"]</div>
+}
+
+<form method="post">
+    @Html.AntiForgeryToken()
+
+    <div class="form-group">
+        <label>
+            <input type="checkbox" asp-for="Enabled" /> Enabled
+        </label>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="OtlpEndpoint">OTLP Endpoint</label>
+        <input class="form-control" asp-for="OtlpEndpoint" />
+        <small class="form-text text-muted">Example: http://localhost:4317</small>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="TraceSampleRate">Trace Sample Rate</label>
+        <input class="form-control" asp-for="TraceSampleRate" />
+        <small class="form-text text-muted">0.01 = 1% sampling. Changes require restart to apply.</small>
+    </div>
+
+    <div class="form-group">
+        <label>
+            <input type="checkbox" asp-for="EnableAspNetCoreInstrumentation" /> Enable AspNetCore Instrumentation
+        </label>
+    </div>
+
+    <div class="form-group">
+        <label>
+            <input type="checkbox" asp-for="EnableHttpClientInstrumentation" /> Enable HttpClient Instrumentation
+        </label>
+    </div>
+
+    <div class="form-group">
+        <label>
+            <input type="checkbox" asp-for="EnableRuntimeMetrics" /> Enable Runtime Metrics
+        </label>
+    </div>
+
+    <hr />
+
+    <div class="form-group">
+        <label asp-for="DashboardUrl">Dashboard URL</label>
+        <input class="form-control" asp-for="DashboardUrl" />
+    </div>
+
+    <div class="form-group">
+        <label asp-for="TracesUrl">Traces URL</label>
+        <input class="form-control" asp-for="TracesUrl" />
+    </div>
+
+    <div class="form-group">
+        <label asp-for="MetricsUrl">Metrics URL</label>
+        <input class="form-control" asp-for="MetricsUrl" />
+    </div>
+
+    <button class="btn btn-primary" type="submit">Save</button>
+</form>
+
+<hr />
+
+<h2>Appsettings (Configuration) Defaults</h2>
+<table class="table">
+    <tr>
+        <th>Enabled</th>
+        <td>@(ViewBag.ConfigEnabled ?? "")</td>
+    </tr>
+    <tr>
+        <th>OTLP Endpoint</th>
+        <td>@(ViewBag.ConfigOtlpEndpoint ?? "")</td>
+    </tr>
+    <tr>
+        <th>Trace Sample Rate</th>
+        <td>@(ViewBag.ConfigTraceSampleRate ?? "")</td>
+    </tr>
+</table>

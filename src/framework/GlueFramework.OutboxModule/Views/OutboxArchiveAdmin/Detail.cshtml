@@ -1,0 +1,27 @@
+@model GlueFramework.OutboxModule.ViewModels.OutboxArchiveDetailViewModel
+
+<h1>Outbox Archive Detail</h1>
+
+<table class="table">
+    <tr><th>MessageId</th><td><code>@Model.Item.MessageId</code></td></tr>
+    <tr><th>Status</th><td>@Model.Item.Status</td></tr>
+    <tr><th>Type</th><td><code>@Model.Item.Type</code></td></tr>
+    <tr><th>OccurredUtc</th><td>@Model.Item.OccurredUtc.ToString("u")</td></tr>
+    <tr><th>ArchivedUtc</th><td>@Model.Item.ArchivedUtc.ToString("u")</td></tr>
+    <tr><th>TryCount</th><td>@Model.Item.TryCount</td></tr>
+    <tr><th>LockedUntilUtc</th><td>@(Model.Item.LockedUntilUtc?.ToString("u") ?? "")</td></tr>
+    <tr><th>NextRetryUtc</th><td>@(Model.Item.NextRetryUtc?.ToString("u") ?? "")</td></tr>
+</table>
+
+@if (!string.IsNullOrWhiteSpace(Model.Item.LastError))
+{
+    <h2>LastError</h2>
+    <pre style="white-space: pre-wrap">@Model.Item.LastError</pre>
+}
+
+<h2>Payload</h2>
+<pre style="white-space: pre-wrap">@Model.Item.Payload</pre>
+
+<p>
+    <a class="btn btn-secondary" href="@Url.Action("Index", "OutboxArchiveAdmin", new { area = "GlueFramework.OutboxModule" })">Back</a>
+</p>
