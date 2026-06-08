@@ -62,9 +62,59 @@ jobs:
           dotnet pack src/framework/GlueFramework.WebCore/GlueFramework.WebCore.csproj -c Release --no-build --no-restore -p:Version=$VERSION -o ./artifacts
           dotnet pack src/framework/GlueFramework.CustomSysSettingsModule/GlueFramework.CustomSysSettingsModule.csproj -c Release --no-build --no-restore -p:Version=$VERSION -o ./artifacts
 
+      - name: List packed artifacts
+        run: |
+          ls -la ./artifacts
+
+      - name: Fail if version already exists on NuGet.org
+        run: |
+          set -euo pipefail
+          VERSION="${{ steps.version.outputs.version }}"
+
+          # Use GlueFramework.Core as the canary package for version existence.
+          PACKAGE_ID="glueframework.core"
+          INDEX_URL="https://api.nuget.org/v3-flatcontainer/${PACKAGE_ID}/index.json"
+
+          echo "Checking if ${PACKAGE_ID} ${VERSION} already exists on NuGet.org..."
+          if curl -fsSL "$INDEX_URL" | tr '[:upper:]' '[:lower:]' | grep -q "\"${VERSION}\""; then
+            echo "ERROR: ${PACKAGE_ID} ${VERSION} already exists on NuGet.org. Bump the version and retry."
+            exit 1
+          fi
+
+          echo "OK: ${PACKAGE_ID} ${VERSION} not found on NuGet.org."
+
+      - name: Verify package contains latest code (AmbientTransactionContext)
+        run: |
+          set -euo pipefail
+          VERSION="${{ steps.version.outputs.version }}"
+
+          CORE_NUPKG="./artifacts/GlueFramework.Core.${VERSION}.nupkg"
+          if [ ! -f "$CORE_NUPKG" ]; then
+            echo "ERROR: Expected package not found: $CORE_NUPKG"
+            exit 1
+          fi
+
+          rm -rf ./tmp_nupkg
+          mkdir -p ./tmp_nupkg
+          unzip -q "$CORE_NUPKG" -d ./tmp_nupkg
+
+          CORE_DLL=$(find ./tmp_nupkg -type f -name 'GlueFramework.Core.dll' | head -n 1)
+          if [ -z "${CORE_DLL}" ]; then
+            echo "ERROR: GlueFramework.Core.dll not found inside nupkg"
+            exit 1
+          fi
+
+          echo "Inspecting: ${CORE_DLL}"
+          if ! strings "${CORE_DLL}" | grep -q "AmbientTransactionContext"; then
+            echo "ERROR: AmbientTransactionContext not found in GlueFramework.Core.dll."
+            echo "This usually means the package was built from old code or the type was trimmed out."
+            exit 1
+          fi
+
+          echo "OK: AmbientTransactionContext found in GlueFramework.Core.dll"
+
       - name: Push to NuGet.org
         run: |
           dotnet nuget push ./artifacts/*.nupkg \
             --api-key ${{ secrets.NUGET_API_KEY }} \
-            --source https://api.nuget.org/v3/index.json \
-            --skip-duplicate
+            --source https://api.nuget.org/v3/index.json
