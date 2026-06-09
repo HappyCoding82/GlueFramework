@@ -7,6 +7,8 @@ namespace GlueFramework.Core.Abstractions
     {
         Task PublishAfterCommitAsync<TEvent>(TEvent evt, CancellationToken cancellationToken = default);
 
+        Task PublishAfterCommitAsync<TEvent>(TEvent evt, bool executeInProcHandlers, CancellationToken cancellationToken = default);
+
         Task PublishNowBestEffortAsync<TEvent>(TEvent evt, CancellationToken cancellationToken = default);
 
         Task PublishNowRequiredAsync<TEvent>(TEvent evt, CancellationToken cancellationToken = default);

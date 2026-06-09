@@ -3,12 +3,8 @@ using GlueFramework.Core.Abstractions.Outbox;
 using GlueFramework.Core.Services;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using OrchardCore.Entities;
 using OrchardCore.Settings;
-using System;
 using System.Text.Json;
-using System.Threading;
-using System.Threading.Tasks;
 using GlueFramework.OutboxModule.Options;
 using GlueFramework.OutboxModule.Settings;
 
@@ -36,7 +32,10 @@ namespace GlueFramework.OutboxModule.Services
             _logger = logger;
         }
 
-        public async Task PublishAfterCommitAsync<TEvent>(TEvent evt, CancellationToken cancellationToken = default)
+        public Task PublishAfterCommitAsync<TEvent>(TEvent evt, CancellationToken cancellationToken = default)
+            => PublishAfterCommitAsync(evt, executeInProcHandlers: true, cancellationToken);
+
+        public async Task PublishAfterCommitAsync<TEvent>(TEvent evt, bool executeInProcHandlers, CancellationToken cancellationToken = default)
         {
             if (evt is IIntegrationEvent)
             {
@@ -57,7 +56,8 @@ namespace GlueFramework.OutboxModule.Services
                 }
             }
 
-            await _inner.PublishAfterCommitAsync(evt, cancellationToken);
+            if (executeInProcHandlers)
+                await _inner.PublishAfterCommitAsync(evt, cancellationToken);
         }
 
         public Task PublishNowBestEffortAsync<TEvent>(TEvent evt, CancellationToken cancellationToken = default)

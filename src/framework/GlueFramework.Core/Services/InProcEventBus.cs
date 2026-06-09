@@ -23,7 +23,15 @@ namespace GlueFramework.Core.Services
 
         public Task PublishAfterCommitAsync<TEvent>(TEvent evt, CancellationToken cancellationToken = default)
         {
+            return PublishAfterCommitAsync(evt, executeInProcHandlers: true, cancellationToken);
+        }
+
+        public Task PublishAfterCommitAsync<TEvent>(TEvent evt, bool executeInProcHandlers, CancellationToken cancellationToken = default)
+        {
             if (evt == null) throw new ArgumentNullException(nameof(evt));
+
+            if (!executeInProcHandlers)
+                return Task.CompletedTask;
 
             TransactionScopeContext.EnqueueAfterCommit(() =>
             {
