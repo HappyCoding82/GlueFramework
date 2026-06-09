@@ -27,7 +27,12 @@ namespace GlueFramework.Core.Services
 
             TransactionScopeContext.EnqueueAfterCommit(() =>
             {
-                _ = PublishNowBestEffortAsync(evt, cancellationToken);
+                // After commit is typically executed after the request is effectively complete.
+                // Do not couple best-effort handlers to the request cancellation token.
+                using (ExecutionContext.SuppressFlow())
+                {
+                    _ = Task.Run(async () => await PublishNowBestEffortAsync(evt, CancellationToken.None).ConfigureAwait(false));
+                }
             });
 
             return Task.CompletedTask;
@@ -35,7 +40,9 @@ namespace GlueFramework.Core.Services
 
         public Task PublishNowBestEffortAsync<TEvent>(TEvent evt, CancellationToken cancellationToken = default)
         {
-            return PublishInternalAsync(evt, cancellationToken, required: false);
+            // Best-effort publishing should not be canceled by an HTTP request abort.
+            // If the caller truly needs cancellation semantics, use PublishNowRequiredAsync.
+            return PublishInternalAsync(evt, CancellationToken.None, required: false);
         }
 
         public Task PublishNowRequiredAsync<TEvent>(TEvent evt, CancellationToken cancellationToken = default)
