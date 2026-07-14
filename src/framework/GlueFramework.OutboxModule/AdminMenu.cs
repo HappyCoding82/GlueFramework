@@ -20,7 +20,9 @@ namespace GlueFramework.OutboxModule
                 return ValueTask.CompletedTask;
 
             builder
-                .Add(S["Configuration"], "100", config => config
+                 .Add(S["System Management"], S["System Management"], systemMgmt => systemMgmt
+                .AddClass("icon-class-fa-solid")
+                .AddClass("icon-class-fa-gear")
                     .Add(S["Outbox"], "50", item => item
                         .Permission(Permissions.ManageOutbox)
                         .Add(S["Records"], "5", sub => sub

@@ -1,0 +1,254 @@
+[
+  {
+    "ContainingType": "AustraliaPostCalculator.Controllers.PostageController",
+    "Method": "CalculatePostage",
+    "RelativePath": "api/Postage/calculate",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "AustraliaPostCalculator.Models.ParcelRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "AustraliaPostCalculator.Models.PostageResult",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "AustraliaPostCalculator.Controllers.PostageController",
+    "Method": "CalculateDomesticPostage",
+    "RelativePath": "api/Postage/calculate-domestic",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "AustraliaPostCalculator.Models.ParcelRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "AustraliaPostCalculator.Models.PostageResult",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "AustraliaPostCalculator.Controllers.PostageController",
+    "Method": "CalculateInternationalPostage",
+    "RelativePath": "api/Postage/calculate-international",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "AustraliaPostCalculator.Models.ParcelRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "AustraliaPostCalculator.Models.PostageResult",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "AustraliaPostCalculator.Controllers.PostageController",
+    "Method": "GetMyPostBands",
+    "RelativePath": "api/Postage/mypost-bands",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [
+      {
+        "Type": "System.Collections.Generic.Dictionary\u00602[[System.Int32, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "AustraliaPostCalculator.Controllers.PostageController",
+    "Method": "ValidateParcel",
+    "RelativePath": "api/Postage/validate",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "Length",
+        "Type": "System.Double",
+        "IsRequired": false
+      },
+      {
+        "Name": "Width",
+        "Type": "System.Double",
+        "IsRequired": false
+      },
+      {
+        "Name": "Height",
+        "Type": "System.Double",
+        "IsRequired": false
+      },
+      {
+        "Name": "Weight",
+        "Type": "System.Double",
+        "IsRequired": false
+      },
+      {
+        "Name": "FromPostcode",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "ToPostcode",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "PackagingType",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "ServiceType",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "MyPostBand",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "IsInternational",
+        "Type": "System.Boolean",
+        "IsRequired": false
+      },
+      {
+        "Name": "DestinationCountry",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "AustraliaPostCalculator.Controllers.ValidationResult",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "AustraliaPostCalculator.Controllers.PostageController",
+    "Method": "GetWeightTiers",
+    "RelativePath": "api/Postage/weight-tiers",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [
+      {
+        "Type": "System.Collections.Generic.List\u00601[[System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "AustraliaPostCalculator.Controllers.PostageController",
+    "Method": "GetDomesticZones",
+    "RelativePath": "api/Postage/zones/domestic",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [
+      {
+        "Type": "System.Collections.Generic.Dictionary\u00602[[System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "AustraliaPostCalculator.Controllers.PostageController",
+    "Method": "GetInternationalZones",
+    "RelativePath": "api/Postage/zones/international",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [
+      {
+        "Type": "System.Collections.Generic.Dictionary\u00602[[System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "Program\u002B\u003C\u003Ec",
+    "Method": "\u003C\u003CMain\u003E$\u003Eb__0_3",
+    "RelativePath": "health",
+    "HttpMethod": "GET",
+    "IsController": false,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [
+      {
+        "Type": "\u003C\u003Ef__AnonymousType3\u00602[[System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.DateTime, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "MediaTypes": [
+          "application/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  }
+]
