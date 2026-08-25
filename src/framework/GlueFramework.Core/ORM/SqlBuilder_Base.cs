@@ -111,9 +111,19 @@ namespace GlueFramework.Core.ORM
 
             return "ORDER BY " + string.Join(", ", parts);
         }
-        protected abstract string GetSelectByPagerSql(string filter, string orderby, int pageIndex, int pageSize);
-        public abstract string GetSelectTopRecordsSql(int number);
-        public abstract string GetQueryTopRecordsSql(int number, string where);
+        protected abstract string GetSelectByPagerSql(string filter, string orderby, int pageIndex, int pageSize, QueryLockType lockType = QueryLockType.None);
+
+        public virtual string GetSelectTopRecordsSql(int number)
+        {
+            return GetSelectTopRecordsSql(number, QueryLockType.None);
+        }
+        public abstract string GetSelectTopRecordsSql(int number, QueryLockType lockType);
+
+        public virtual string GetQueryTopRecordsSql(int number, string where)
+        {
+            return GetQueryTopRecordsSql(number, where, QueryLockType.None);
+        }
+        public abstract string GetQueryTopRecordsSql(int number, string where, QueryLockType lockType);
 
         protected virtual string TableNameForSql()
         {
@@ -132,6 +142,16 @@ namespace GlueFramework.Core.ORM
             else
                 return PopulateName(name);
         }
+
+        /// <summary>
+        /// Returns a table-level lock hint placed immediately after the table name (SQL Server style).
+        /// </summary>
+        protected virtual string GetTableLockHint(QueryLockType lockType) => string.Empty;
+
+        /// <summary>
+        /// Returns a lock clause appended at the end of the SELECT statement (PostgreSQL/MySQL style).
+        /// </summary>
+        protected virtual string GetSuffixLockClause(QueryLockType lockType) => string.Empty;
 
         public virtual string GetInsertSql()
         {
@@ -170,14 +190,20 @@ namespace GlueFramework.Core.ORM
             return rs;
         }
 
-        protected string BuildSelectStatement()
+        protected string BuildSelectStatement(QueryLockType lockType = QueryLockType.None)
         {
-            return $"Select {GetFieldList()} FROM {TableNameForSql()} ";
+            var lockHint = lockType == QueryLockType.None ? string.Empty : GetTableLockHint(lockType);
+            return $"Select {GetFieldList()} FROM {TableNameForSql()}{lockHint} ";
         }
 
         public string GetSelectAllSql()
         {
-            var selectStatement = $"{BuildSelectStatement()} ; ";
+            return GetSelectAllSql(QueryLockType.None);
+        }
+
+        public virtual string GetSelectAllSql(QueryLockType lockType)
+        {
+            var selectStatement = $"{BuildSelectStatement(lockType)} ; ";
             return selectStatement;
         }
 
@@ -199,9 +225,15 @@ namespace GlueFramework.Core.ORM
 
         public string GetSelectByKeySql()
         {
+            return GetSelectByKeySql(QueryLockType.None);
+        }
+
+        public virtual string GetSelectByKeySql(QueryLockType lockType)
+        {
             var fieldListStr = string.Join(",", _tbMapping.PropMappings.Select(x => x.FieldName == x.PropertyName ?
             $"{PopulateName(x.PropertyName)}" : $"{PopulateName(x.FieldName)} as {PopulateName(x.PropertyName)}").ToArray());
-            var selectStatement = $"Select {fieldListStr} FROM {TableNameForSql()} {GetKeyFilter()}; ";
+            var lockHint = lockType == QueryLockType.None ? string.Empty : GetTableLockHint(lockType);
+            var selectStatement = $"Select {fieldListStr} FROM {TableNameForSql()}{lockHint} {GetKeyFilter()}; ";
 
             return selectStatement;
         }
@@ -486,7 +518,12 @@ namespace GlueFramework.Core.ORM
 
         public virtual KeyValuePair<string, DynamicParameters> BuildQuery(Expression<Func<T, bool>> expression)
         {
-            string selectStatement = BuildSelectStatement();
+            return BuildQuery(expression, QueryLockType.None);
+        }
+
+        public virtual KeyValuePair<string, DynamicParameters> BuildQuery(Expression<Func<T, bool>> expression, QueryLockType lockType)
+        {
+            string selectStatement = BuildSelectStatement(lockType);
             var parameter = new DynamicParameters();
             var wherePart = GetWherePart(expression);
             string whereStatement = wherePart.HasSql ? $" WHERE {wherePart.Sql}" : string.Empty;
@@ -494,17 +531,24 @@ namespace GlueFramework.Core.ORM
             {
                 parameter.Add(param.Key, param.Value, param.Type);
             }
-            string sql = $"{selectStatement} {whereStatement}"; // sql.Replace("{where}", whereSql.HasSql ? $" WHERE {whereSql.Sql}" : string.Empty);
+            string sql = $"{selectStatement} {whereStatement}";
+            if (lockType != QueryLockType.None)
+                sql += GetSuffixLockClause(lockType);
 
             return new KeyValuePair<string, DynamicParameters>(sql, parameter);
         }
 
         public KeyValuePair<string, DynamicParameters> BuildQueryTop(Expression<Func<T, bool>> expression, int number)
         {
+            return BuildQueryTop(expression, number, QueryLockType.None);
+        }
+
+        public KeyValuePair<string, DynamicParameters> BuildQueryTop(Expression<Func<T, bool>> expression, int number, QueryLockType lockType)
+        {
             var parameter = new DynamicParameters();
             var wherePart = GetWherePart(expression);
             string whereStatement = wherePart.HasSql ? $" WHERE {wherePart.Sql}" : string.Empty;
-            string sql = GetQueryTopRecordsSql(number, whereStatement);
+            string sql = GetQueryTopRecordsSql(number, whereStatement, lockType);
             foreach (var param in wherePart.Parameters)
             {
                 parameter.Add(param.Key, param.Value, param.Type);
@@ -514,12 +558,11 @@ namespace GlueFramework.Core.ORM
 
         public KeyValuePair<string, DynamicParameters> BuildQuery(PagedFilterOptions<T> filterOpt)
         {
-
             var parameter = new DynamicParameters();
             var wherePart = GetWherePart(filterOpt.WhereClause);
             string whereStatement = wherePart.HasSql ? $" WHERE {wherePart.Sql}" : string.Empty;
             var orderby = BuildOrderByClauseFromExpressions(filterOpt);
-            string sql = GetCountSql(wherePart.Sql) + GetSelectByPagerSql(whereStatement, orderby, filterOpt.Pager.PageIndex, filterOpt.Pager.PageSize);
+            string sql = GetCountSql(wherePart.Sql) + GetSelectByPagerSql(whereStatement, orderby, filterOpt.Pager.PageIndex, filterOpt.Pager.PageSize, filterOpt.LockType);
             foreach (var param in wherePart.Parameters)
             {
                 parameter.Add(param.Key, param.Value, param.Type);

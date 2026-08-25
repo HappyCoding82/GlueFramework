@@ -1,7 +1,9 @@
 using GlueFramework.Core.Abstractions;
 using GlueFramework.Core.ORM;
 using GlueFramework.Core.Services;
+using System.Data;
 using System.Linq.Expressions;
+using static GlueFramework.Core.ORM.SqlBuilderFactory;
 
 namespace GlueFramework.CoreTests.Sql
 {
@@ -242,6 +244,61 @@ namespace GlueFramework.CoreTests.Sql
                 })
                 .PrintToListSqlAsync();
 
+            var (sql, parameters) = task.GetAwaiter().GetResult();
+            return new JoinQuerySqlResult(sql, parameters.ParameterNames.ToArray());
+        }
+
+        public JoinQuerySqlResult BuildDemoProductQuerySqlWithLock(int id, QueryLockType lockType, DBTypes dbType)
+        {
+            var builder = SqlBuilderFactory.CreateInstance<DemoProduct>(dbType, dataTablePrefixProvider: null);
+            var cmd = builder.BuildQuery(p => p.Id == id, lockType);
+            return new JoinQuerySqlResult(cmd.Key, cmd.Value.ParameterNames.ToArray());
+        }
+
+        public JoinQuerySqlResult BuildDemoProductQueryTopSqlWithLock(int id, QueryLockType lockType, DBTypes dbType)
+        {
+            var builder = SqlBuilderFactory.CreateInstance<DemoProduct>(dbType, dataTablePrefixProvider: null);
+            var cmd = builder.BuildQueryTop(p => p.Id == id, 1, lockType);
+            return new JoinQuerySqlResult(cmd.Key, cmd.Value.ParameterNames.ToArray());
+        }
+
+        public JoinQuerySqlResult BuildDemoProductPagedQuerySqlWithLock(QueryLockType lockType, DBTypes dbType)
+        {
+            var builder = SqlBuilderFactory.CreateInstance<DemoProduct>(dbType, dataTablePrefixProvider: null);
+            var opts = new PagedFilterOptions<DemoProduct>(
+                p => p.Id > 0,
+                new PagerInfo { PageIndex = 1, PageSize = 10 },
+                p => p.Id)
+            {
+                LockType = lockType
+            };
+            var cmd = builder.BuildQuery(opts);
+            return new JoinQuerySqlResult(cmd.Key, cmd.Value.ParameterNames.ToArray());
+        }
+
+        public JoinQuerySqlResult BuildDemoProductJoinQuerySqlWithLock(QueryLockType lockType, DBTypes dbType)
+        {
+            var q = JoinQuery.From<DemoProduct>()
+                .Join<Category>((p, c) => p.CategoryId == c.Id)
+                .Join<Brand>((p, c, b) => p.BrandId == b.Id, JoinType.Left)
+                .Where((p, c, b) => p.Id == 1)
+                .WithLock(lockType)
+                .OrderBy((p, c, b) => p.Id)
+                .Select((p, c, b) => new DemoProductReportRow
+                {
+                    ProductId = p.Id,
+                    ProductName = p.Name,
+                    Price = p.Price,
+                    CategoryName = c.CategoryName,
+                    BrandName = b.BrandName
+                })
+                .Page(0, 10);
+
+            var connection = dbType == DBTypes.POSTGRESQL
+                ? new FakeNpgsqlConnection()
+                : (IDbConnection)new FakeSqlServerConnection();
+
+            var task = q.PrintToListSqlAsync(connection, transaction: null, tablePrefixProvider: null);
             var (sql, parameters) = task.GetAwaiter().GetResult();
             return new JoinQuerySqlResult(sql, parameters.ParameterNames.ToArray());
         }

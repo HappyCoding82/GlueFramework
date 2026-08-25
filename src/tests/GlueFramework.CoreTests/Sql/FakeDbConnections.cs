@@ -52,4 +52,8 @@ namespace GlueFramework.CoreTests.Sql
     internal sealed class FakeNpgsqlConnection : FakeDbConnectionBase
     {
     }
+
+    internal sealed class FakeSqliteConnection : FakeDbConnectionBase
+    {
+    }
 }

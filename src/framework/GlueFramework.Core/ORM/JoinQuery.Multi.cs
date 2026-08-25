@@ -30,6 +30,7 @@ namespace GlueFramework.Core.ORM
         private bool _distinct;
         private LambdaExpression? _groupBy;
         private Expression<Func<T1, T2, T3, bool>>? _having;
+        private QueryLockType _lockType = QueryLockType.None;
 
         internal JoinQueryBuilder(
             string a1,
@@ -38,7 +39,8 @@ namespace GlueFramework.Core.ORM
             JoinType joinType2,
             string a3,
             Expression<Func<T1, T2, T3, bool>> on3,
-            JoinType joinType3)
+            JoinType joinType3,
+            QueryLockType lockType = QueryLockType.None)
         {
             _a1 = a1;
             _a2 = a2;
@@ -48,6 +50,7 @@ namespace GlueFramework.Core.ORM
             _a3 = a3;
             _on3 = on3;
             _joinType3 = joinType3;
+            _lockType = lockType;
         }
 
         public JoinQueryBuilder<T1, T2, T3> Where(Expression<Func<T1, T2, T3, bool>> predicate)
@@ -89,6 +92,24 @@ namespace GlueFramework.Core.ORM
         internal void SetDistinct(bool distinct) => _distinct = distinct;
         internal void SetGroupBy(LambdaExpression keySelector) => _groupBy = keySelector;
         internal void SetHaving(Expression<Func<T1, T2, T3, bool>> predicate) => _having = predicate;
+
+        public JoinQueryBuilder<T1, T2, T3> ForUpdate()
+        {
+            _lockType = QueryLockType.ForUpdate;
+            return this;
+        }
+
+        public JoinQueryBuilder<T1, T2, T3> ForShare()
+        {
+            _lockType = QueryLockType.ForShare;
+            return this;
+        }
+
+        public JoinQueryBuilder<T1, T2, T3> WithLock(QueryLockType lockType)
+        {
+            _lockType = lockType;
+            return this;
+        }
 
         public JoinQueryViewBuilder<T1, T2, T3, TView> UseView<TView>(Action<ViewMap<T1, T2, T3, TView>> map) where TView : class
         {
@@ -143,7 +164,8 @@ namespace GlueFramework.Core.ORM
                 _joinType3,
                 alias4,
                 on,
-                joinType);
+                joinType,
+                _lockType);
         }
 
         public JoinQueryBuilder<T1, T2, T3, T4> Join<T4>(
@@ -163,7 +185,8 @@ namespace GlueFramework.Core.ORM
                 _joinType3,
                 "t4",
                 on,
-                joinType);
+                joinType,
+                _lockType);
         }
 
         internal (string a1, string a2, string a3) Aliases => (_a1, _a2, _a3);
@@ -176,6 +199,7 @@ namespace GlueFramework.Core.ORM
         internal bool Distinct => _distinct;
         internal LambdaExpression? GroupByExpr => _groupBy;
         internal Expression<Func<T1, T2, T3, bool>>? HavingExpr => _having;
+        internal QueryLockType LockType => _lockType;
     }
 
     internal static class JoinQueryProjectionSelectMapBuilderMulti
@@ -271,6 +295,7 @@ namespace GlueFramework.Core.ORM
         private bool _distinct;
         private LambdaExpression? _groupBy;
         private Expression<Func<T1, T2, T3, T4, bool>>? _having;
+        private QueryLockType _lockType = QueryLockType.None;
 
         internal JoinQueryBuilder(
             string a1,
@@ -282,7 +307,8 @@ namespace GlueFramework.Core.ORM
             JoinType joinType3,
             string a4,
             Expression<Func<T1, T2, T3, T4, bool>> on4,
-            JoinType joinType4)
+            JoinType joinType4,
+            QueryLockType lockType = QueryLockType.None)
         {
             _a1 = a1;
             _a2 = a2;
@@ -296,6 +322,7 @@ namespace GlueFramework.Core.ORM
             _a4 = a4;
             _on4 = on4;
             _joinType4 = joinType4;
+            _lockType = lockType;
         }
 
         public JoinQueryBuilder<T1, T2, T3, T4> Where(Expression<Func<T1, T2, T3, T4, bool>> predicate)
@@ -337,6 +364,24 @@ namespace GlueFramework.Core.ORM
         internal void SetDistinct(bool distinct) => _distinct = distinct;
         internal void SetGroupBy(LambdaExpression keySelector) => _groupBy = keySelector;
         internal void SetHaving(Expression<Func<T1, T2, T3, T4, bool>> predicate) => _having = predicate;
+
+        public JoinQueryBuilder<T1, T2, T3, T4> ForUpdate()
+        {
+            _lockType = QueryLockType.ForUpdate;
+            return this;
+        }
+
+        public JoinQueryBuilder<T1, T2, T3, T4> ForShare()
+        {
+            _lockType = QueryLockType.ForShare;
+            return this;
+        }
+
+        public JoinQueryBuilder<T1, T2, T3, T4> WithLock(QueryLockType lockType)
+        {
+            _lockType = lockType;
+            return this;
+        }
 
         public JoinQueryViewBuilder<T1, T2, T3, T4, TView> UseView<TView>(Action<ViewMap<T1, T2, T3, T4, TView>> map) where TView : class
         {
@@ -382,6 +427,7 @@ namespace GlueFramework.Core.ORM
         internal bool Distinct => _distinct;
         internal LambdaExpression? GroupByExpr => _groupBy;
         internal Expression<Func<T1, T2, T3, T4, bool>>? HavingExpr => _having;
+        internal QueryLockType LockType => _lockType;
     }
 
     public sealed class ViewMap<T1, T2, T3, TView> where T1 : class where T2 : class where T3 : class where TView : class
@@ -656,13 +702,31 @@ namespace GlueFramework.Core.ORM
             return this;
         }
 
+        public JoinQuerySelectBuilder<T1, T2, T3, TDto> ForUpdate()
+        {
+            _inner.ForUpdate();
+            return this;
+        }
+
+        public JoinQuerySelectBuilder<T1, T2, T3, TDto> ForShare()
+        {
+            _inner.ForShare();
+            return this;
+        }
+
+        public JoinQuerySelectBuilder<T1, T2, T3, TDto> WithLock(QueryLockType lockType)
+        {
+            _inner.WithLock(lockType);
+            return this;
+        }
+
         public async Task<(string, DynamicParameters)> PrintToListSqlAsync(IDbConnection connection, IDbTransaction? transaction = null, IDataTablePrefixProvider? tablePrefixProvider = null)
         {
             if (connection == null)
                 throw new ArgumentNullException(nameof(connection));
 
             var dialect = JoinQueryDialectFactory.FromConnection(connection);
-            var (sql, parameters) = JoinSqlRendererMulti.Render(dialect, _inner, _selectMap, whereExpr: null, orderByExprs: null, tablePrefixProvider: tablePrefixProvider);
+            var (sql, parameters) = JoinSqlRendererMulti.Render(dialect, _inner, _selectMap, whereExpr: null, orderByExprs: null, tablePrefixProvider: tablePrefixProvider, lockType: _inner.LockType);
             return (sql, parameters);
         }
 
@@ -672,7 +736,7 @@ namespace GlueFramework.Core.ORM
                 throw new ArgumentNullException(nameof(connection));
 
             var dialect = JoinQueryDialectFactory.FromConnection(connection);
-            var (sql, parameters) = JoinSqlRendererMulti.Render(dialect, _inner, _selectMap, whereExpr: null, orderByExprs: null, tablePrefixProvider: tablePrefixProvider);
+            var (sql, parameters) = JoinSqlRendererMulti.Render(dialect, _inner, _selectMap, whereExpr: null, orderByExprs: null, tablePrefixProvider: tablePrefixProvider, lockType: _inner.LockType);
             var rows = await connection.QueryAsync<TDto>(sql, parameters, transaction);
             return rows.AsList();
         }
@@ -750,6 +814,24 @@ namespace GlueFramework.Core.ORM
             return this;
         }
 
+        public JoinQueryViewBuilder<T1, T2, T3, TView> ForUpdate()
+        {
+            _inner.ForUpdate();
+            return this;
+        }
+
+        public JoinQueryViewBuilder<T1, T2, T3, TView> ForShare()
+        {
+            _inner.ForShare();
+            return this;
+        }
+
+        public JoinQueryViewBuilder<T1, T2, T3, TView> WithLock(QueryLockType lockType)
+        {
+            _inner.WithLock(lockType);
+            return this;
+        }
+
         public async Task<IReadOnlyList<TDto>> Select<TDto>(IDbConnection connection, IDbTransaction? transaction = null, IDataTablePrefixProvider? tablePrefixProvider = null) where TDto : class
         {
             if (connection == null)
@@ -762,7 +844,7 @@ namespace GlueFramework.Core.ORM
                 : _orderBys.Select(o => (ViewExpressionRewriter<T1, T2, T3, TView>.RewriteKeySelector(_viewMap, o.keySelector), o.desc)).ToList();
 
             var dialect = JoinQueryDialectFactory.FromConnection(connection);
-            var (sql, parameters) = JoinSqlRendererMulti.Render(dialect, _inner, selectMap, rewrittenWhere, rewrittenOrder, tablePrefixProvider: tablePrefixProvider);
+            var (sql, parameters) = JoinSqlRendererMulti.Render(dialect, _inner, selectMap, rewrittenWhere, rewrittenOrder, tablePrefixProvider: tablePrefixProvider, lockType: _inner.LockType);
             var rows = await connection.QueryAsync<TDto>(sql, parameters, transaction);
             return rows.AsList();
         }
@@ -840,6 +922,24 @@ namespace GlueFramework.Core.ORM
             return this;
         }
 
+        public JoinQueryViewBuilder<T1, T2, T3, T4, TView> ForUpdate()
+        {
+            _inner.ForUpdate();
+            return this;
+        }
+
+        public JoinQueryViewBuilder<T1, T2, T3, T4, TView> ForShare()
+        {
+            _inner.ForShare();
+            return this;
+        }
+
+        public JoinQueryViewBuilder<T1, T2, T3, T4, TView> WithLock(QueryLockType lockType)
+        {
+            _inner.WithLock(lockType);
+            return this;
+        }
+
         public async Task<IReadOnlyList<TDto>> Select<TDto>(IDbConnection connection, IDbTransaction? transaction = null, IDataTablePrefixProvider? tablePrefixProvider = null) where TDto : class
         {
             if (connection == null)
@@ -852,7 +952,7 @@ namespace GlueFramework.Core.ORM
                 : _orderBys.Select(o => (ViewExpressionRewriter<T1, T2, T3, T4, TView>.RewriteKeySelector(_viewMap, o.keySelector), o.desc)).ToList();
 
             var dialect = JoinQueryDialectFactory.FromConnection(connection);
-            var (sql, parameters) = JoinSqlRendererMulti.Render(dialect, _inner, selectMap, rewrittenWhere, rewrittenOrder, tablePrefixProvider: tablePrefixProvider);
+            var (sql, parameters) = JoinSqlRendererMulti.Render(dialect, _inner, selectMap, rewrittenWhere, rewrittenOrder, tablePrefixProvider: tablePrefixProvider, lockType: _inner.LockType);
             var rows = await connection.QueryAsync<TDto>(sql, parameters, transaction);
             return rows.AsList();
         }
@@ -920,13 +1020,31 @@ namespace GlueFramework.Core.ORM
             return this;
         }
 
+        public JoinQuerySelectBuilder<T1, T2, T3, T4, TDto> ForUpdate()
+        {
+            _inner.ForUpdate();
+            return this;
+        }
+
+        public JoinQuerySelectBuilder<T1, T2, T3, T4, TDto> ForShare()
+        {
+            _inner.ForShare();
+            return this;
+        }
+
+        public JoinQuerySelectBuilder<T1, T2, T3, T4, TDto> WithLock(QueryLockType lockType)
+        {
+            _inner.WithLock(lockType);
+            return this;
+        }
+
         public async Task<IReadOnlyList<TDto>> ToListAsync(IDbConnection connection, IDbTransaction? transaction = null, IDataTablePrefixProvider? tablePrefixProvider = null)
         {
             if (connection == null)
                 throw new ArgumentNullException(nameof(connection));
 
             var dialect = JoinQueryDialectFactory.FromConnection(connection);
-            var (sql, parameters) = JoinSqlRendererMulti.Render(dialect, _inner, _selectMap, whereExpr: null, orderByExprs: null, tablePrefixProvider: tablePrefixProvider);
+            var (sql, parameters) = JoinSqlRendererMulti.Render(dialect, _inner, _selectMap, whereExpr: null, orderByExprs: null, tablePrefixProvider: tablePrefixProvider, lockType: _inner.LockType);
             var rows = await connection.QueryAsync<TDto>(sql, parameters, transaction);
             return rows.AsList();
         }
@@ -940,7 +1058,8 @@ namespace GlueFramework.Core.ORM
             SelectMap<T1, T2, T3, TDto> selectMap,
             Expression<Func<T1, T2, T3, bool>>? whereExpr,
             IReadOnlyList<(Expression<Func<T1, T2, T3, object>> keySelector, bool desc)>? orderByExprs,
-            IDataTablePrefixProvider? tablePrefixProvider)
+            IDataTablePrefixProvider? tablePrefixProvider,
+            QueryLockType lockType = QueryLockType.None)
             where T1 : class where T2 : class where T3 : class where TDto : class
         {
             var (a1, a2, a3) = query.Aliases;
@@ -972,7 +1091,9 @@ namespace GlueFramework.Core.ORM
             })));
 
             sb.Append(" FROM ");
-            sb.Append($"{dialect.QuoteIdentifier(JoinQueryTableName.WithSchemaAndPrefix(t1Mapping.TableName, tablePrefixProvider))} {a1} ");
+            sb.Append($"{dialect.QuoteIdentifier(JoinQueryTableName.WithSchemaAndPrefix(t1Mapping.TableName, tablePrefixProvider))} {a1}");
+            sb.Append(dialect.GetTableLockHint(lockType));
+            sb.Append(" ");
 
             sb.Append(query.Join2.joinType2 == JoinType.Left ? "LEFT JOIN " : "JOIN ");
             sb.Append($"{dialect.QuoteIdentifier(JoinQueryTableName.WithSchemaAndPrefix(t2Mapping.TableName, tablePrefixProvider))} {a2} ON ");
@@ -1038,6 +1159,14 @@ namespace GlueFramework.Core.ORM
                 dialect.AppendPaging(sb, parameters, query.PageSpec.Value.skip, query.PageSpec.Value.take, hasOrderBy: query.OrderBys.Count > 0 || (orderByExprs != null && orderByExprs.Count > 0));
             }
 
+            if (lockType != QueryLockType.None)
+            {
+                if (dialect is PostgreSqlJoinQueryDialect && (query.Distinct || query.GroupByExpr != null))
+                    throw new NotSupportedException("FOR UPDATE / FOR SHARE cannot be used with DISTINCT or GROUP BY in PostgreSQL.");
+
+                sb.Append(dialect.GetLockClause(lockType, a1));
+            }
+
             sb.Append(";");
             return (sb.ToString(), parameters);
         }
@@ -1048,7 +1177,8 @@ namespace GlueFramework.Core.ORM
             SelectMap<T1, T2, T3, T4, TDto> selectMap,
             Expression<Func<T1, T2, T3, T4, bool>>? whereExpr,
             IReadOnlyList<(Expression<Func<T1, T2, T3, T4, object>> keySelector, bool desc)>? orderByExprs,
-            IDataTablePrefixProvider? tablePrefixProvider)
+            IDataTablePrefixProvider? tablePrefixProvider,
+            QueryLockType lockType = QueryLockType.None)
             where T1 : class where T2 : class where T3 : class where T4 : class where TDto : class
         {
             var (a1, a2, a3, a4) = query.Aliases;
@@ -1086,7 +1216,9 @@ namespace GlueFramework.Core.ORM
             })));
 
             sb.Append(" FROM ");
-            sb.Append($"{dialect.QuoteIdentifier(JoinQueryTableName.WithPrefix(t1Mapping.TableName, tablePrefixProvider))} {a1} ");
+            sb.Append($"{dialect.QuoteIdentifier(JoinQueryTableName.WithPrefix(t1Mapping.TableName, tablePrefixProvider))} {a1}");
+            sb.Append(dialect.GetTableLockHint(lockType));
+            sb.Append(" ");
 
             sb.Append(query.Join2.joinType2 == JoinType.Left ? "LEFT JOIN " : "JOIN ");
             sb.Append($"{dialect.QuoteIdentifier(JoinQueryTableName.WithPrefix(t2Mapping.TableName, tablePrefixProvider))} {a2} ON ");
@@ -1140,6 +1272,14 @@ namespace GlueFramework.Core.ORM
             if (query.PageSpec != null)
             {
                 dialect.AppendPaging(sb, parameters, query.PageSpec.Value.skip, query.PageSpec.Value.take, hasOrderBy: query.OrderBys.Count > 0 || (orderByExprs != null && orderByExprs.Count > 0));
+            }
+
+            if (lockType != QueryLockType.None)
+            {
+                if (dialect is PostgreSqlJoinQueryDialect && (query.Distinct || query.GroupByExpr != null))
+                    throw new NotSupportedException("FOR UPDATE / FOR SHARE cannot be used with DISTINCT or GROUP BY in PostgreSQL.");
+
+                sb.Append(dialect.GetLockClause(lockType, a1));
             }
 
             sb.Append(";");

@@ -152,41 +152,78 @@ namespace GlueFramework.Core.UOW
 
         public async Task<Model> GetSingleOrDefaultByKeyAsync(Model data)
         {
-            var getByKeyCmd = CurrentSqlBuilder.GetSelectByKeySql();
+            return await GetSingleOrDefaultByKeyAsync(data, QueryLockType.None);
+        }
+
+        public async Task<Model> GetSingleOrDefaultByKeyAsync(Model data, QueryLockType lockType)
+        {
+            var getByKeyCmd = CurrentSqlBuilder.GetSelectByKeySql(lockType);
             return await QuerySingleOrDefaultAsync(getByKeyCmd, data);
         }
+
         public async Task<Model> GetByKeyAsync(Model data)
         {
-            var getByKeyCmd = CurrentSqlBuilder.GetSelectByKeySql();
+            return await GetByKeyAsync(data, QueryLockType.None);
+        }
+
+        public async Task<Model> GetByKeyAsync(Model data, QueryLockType lockType)
+        {
+            var getByKeyCmd = CurrentSqlBuilder.GetSelectByKeySql(lockType);
             return await QuerySingleAsync(getByKeyCmd, data);
         }
 
         public async Task<IEnumerable<Model>> GetAllAsync()
         {
-            var query = CurrentSqlBuilder.GetSelectAllSql();
+            return await GetAllAsync(QueryLockType.None);
+        }
+
+        public async Task<IEnumerable<Model>> GetAllAsync(QueryLockType lockType)
+        {
+            var query = CurrentSqlBuilder.GetSelectAllSql(lockType);
             return await QueryAsync<Model>(query, null);
         }
 
         public async Task<IEnumerable<Model>> GetTopRecordsAsync(int number)
         {
-            var getByKeyCmd = CurrentSqlBuilder.GetSelectTopRecordsSql(number);
+            return await GetTopRecordsAsync(number, QueryLockType.None);
+        }
+
+        public async Task<IEnumerable<Model>> GetTopRecordsAsync(int number, QueryLockType lockType)
+        {
+            var getByKeyCmd = CurrentSqlBuilder.GetSelectTopRecordsSql(number, lockType);
             return await QueryAsync<Model>(getByKeyCmd, null);
         }
 
         public async Task<IEnumerable<Model>> QueryTopAsync(Expression<Func<Model, bool>> exp, int number)
         {
-            var sql = CurrentSqlBuilder.BuildQueryTop(exp, number);
+            return await QueryTopAsync(exp, number, QueryLockType.None);
+        }
+
+        public async Task<IEnumerable<Model>> QueryTopAsync(Expression<Func<Model, bool>> exp, int number, QueryLockType lockType)
+        {
+            var sql = CurrentSqlBuilder.BuildQueryTop(exp, number, lockType);
             return await QueryAsync(sql);
         }
+
         public async Task<IEnumerable<Model>> QueryAsync(Expression<Func<Model, bool>> expression)
         {
-            var sql = CurrentSqlBuilder.BuildQuery(expression);
+            return await QueryAsync(expression, QueryLockType.None);
+        }
+
+        public async Task<IEnumerable<Model>> QueryAsync(Expression<Func<Model, bool>> expression, QueryLockType lockType)
+        {
+            var sql = CurrentSqlBuilder.BuildQuery(expression, lockType);
             return await QueryAsync(sql);
         }
 
         public async Task<Model> FirstOrDefaultAsync(Expression<Func<Model, bool>> exp)
         {
-            var sql = CurrentSqlBuilder.BuildQueryTop(exp, 1);
+            return await FirstOrDefaultAsync(exp, QueryLockType.None);
+        }
+
+        public async Task<Model> FirstOrDefaultAsync(Expression<Func<Model, bool>> exp, QueryLockType lockType)
+        {
+            var sql = CurrentSqlBuilder.BuildQueryTop(exp, 1, lockType);
             return await FirstOrDefaultAsync(sql);
         }
 

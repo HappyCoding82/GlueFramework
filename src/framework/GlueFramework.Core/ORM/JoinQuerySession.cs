@@ -78,6 +78,24 @@ namespace GlueFramework.Core.ORM
         {
             return new SessionJoinQueryBuilder<T1, T2>(_session, _inner.Join(on, joinType));
         }
+
+        public SessionJoinQueryBuilder<T1> ForUpdate()
+        {
+            _inner.ForUpdate();
+            return this;
+        }
+
+        public SessionJoinQueryBuilder<T1> ForShare()
+        {
+            _inner.ForShare();
+            return this;
+        }
+
+        public SessionJoinQueryBuilder<T1> WithLock(QueryLockType lockType)
+        {
+            _inner.WithLock(lockType);
+            return this;
+        }
     }
 
     public sealed class SessionJoinQueryBuilder<T1, T2>
@@ -113,6 +131,24 @@ namespace GlueFramework.Core.ORM
         public SessionJoinQueryBuilder<T1, T2> Page(int skip, int take)
         {
             _inner.Page(skip, take);
+            return this;
+        }
+
+        public SessionJoinQueryBuilder<T1, T2> ForUpdate()
+        {
+            _inner.ForUpdate();
+            return this;
+        }
+
+        public SessionJoinQueryBuilder<T1, T2> ForShare()
+        {
+            _inner.ForShare();
+            return this;
+        }
+
+        public SessionJoinQueryBuilder<T1, T2> WithLock(QueryLockType lockType)
+        {
+            _inner.WithLock(lockType);
             return this;
         }
 
@@ -184,6 +220,24 @@ namespace GlueFramework.Core.ORM
                 return this;
             }
 
+            public SessionJoinQuerySelectBuilder<TDto> ForUpdate()
+            {
+                _inner.ForUpdate();
+                return this;
+            }
+
+            public SessionJoinQuerySelectBuilder<TDto> ForShare()
+            {
+                _inner.ForShare();
+                return this;
+            }
+
+            public SessionJoinQuerySelectBuilder<TDto> WithLock(QueryLockType lockType)
+            {
+                _inner.WithLock(lockType);
+                return this;
+            }
+
             public Task<(string, DynamicParameters)> PrintToListSqlAsync()
             {
                 return _session.ExecuteAsync(() =>
@@ -243,6 +297,24 @@ namespace GlueFramework.Core.ORM
             return this;
         }
 
+        public SessionJoinQueryBuilder<T1, T2, T3> ForUpdate()
+        {
+            _inner.ForUpdate();
+            return this;
+        }
+
+        public SessionJoinQueryBuilder<T1, T2, T3> ForShare()
+        {
+            _inner.ForShare();
+            return this;
+        }
+
+        public SessionJoinQueryBuilder<T1, T2, T3> WithLock(QueryLockType lockType)
+        {
+            _inner.WithLock(lockType);
+            return this;
+        }
+
         public SessionJoinQueryBuilder<T1, T2, T3, T4> Join<T4>(Expression<Func<T1, T2, T3, T4, bool>> on, JoinType joinType = JoinType.Inner) where T4 : class
         {
             return new SessionJoinQueryBuilder<T1, T2, T3, T4>(_session, _inner.Join(on, joinType));
@@ -290,6 +362,24 @@ namespace GlueFramework.Core.ORM
             public SessionJoinQuerySelectBuilder<TDto> Page(int skip, int take)
             {
                 _inner.Page(skip, take);
+                return this;
+            }
+
+            public SessionJoinQuerySelectBuilder<TDto> ForUpdate()
+            {
+                _inner.ForUpdate();
+                return this;
+            }
+
+            public SessionJoinQuerySelectBuilder<TDto> ForShare()
+            {
+                _inner.ForShare();
+                return this;
+            }
+
+            public SessionJoinQuerySelectBuilder<TDto> WithLock(QueryLockType lockType)
+            {
+                _inner.WithLock(lockType);
                 return this;
             }
 
@@ -355,6 +445,24 @@ namespace GlueFramework.Core.ORM
             return this;
         }
 
+        public SessionJoinQueryBuilder<T1, T2, T3, T4> ForUpdate()
+        {
+            _inner.ForUpdate();
+            return this;
+        }
+
+        public SessionJoinQueryBuilder<T1, T2, T3, T4> ForShare()
+        {
+            _inner.ForShare();
+            return this;
+        }
+
+        public SessionJoinQueryBuilder<T1, T2, T3, T4> WithLock(QueryLockType lockType)
+        {
+            _inner.WithLock(lockType);
+            return this;
+        }
+
         public SessionJoinQuerySelectBuilder<TDto> Select<TDto>(Action<SelectMap<T1, T2, T3, T4, TDto>> map) where TDto : class
         {
             return new SessionJoinQuerySelectBuilder<TDto>(_session, _inner.Select(map));
@@ -397,6 +505,24 @@ namespace GlueFramework.Core.ORM
             public SessionJoinQuerySelectBuilder<TDto> Page(int skip, int take)
             {
                 _inner.Page(skip, take);
+                return this;
+            }
+
+            public SessionJoinQuerySelectBuilder<TDto> ForUpdate()
+            {
+                _inner.ForUpdate();
+                return this;
+            }
+
+            public SessionJoinQuerySelectBuilder<TDto> ForShare()
+            {
+                _inner.ForShare();
+                return this;
+            }
+
+            public SessionJoinQuerySelectBuilder<TDto> WithLock(QueryLockType lockType)
+            {
+                _inner.WithLock(lockType);
                 return this;
             }
 

@@ -4,6 +4,7 @@ using System.Data;
 using System.Reflection;
 using System.Text;
 using static GlueFramework.Core.ORM.SqlBuilderFactory;
+using QueryLockType = GlueFramework.Core.Abstractions.QueryLockType;
 
 namespace GlueFramework.Core.ORM
 {
@@ -25,16 +26,36 @@ namespace GlueFramework.Core.ORM
             return "(SELECT last_insert_rowid())";
         }
 
-        public override string GetSelectTopRecordsSql(int number)
+        public override string GetSelectTopRecordsSql(int number, QueryLockType lockType = QueryLockType.None)
         {
+            ThrowIfLockRequested(lockType);
             var selectStatement = $"Select {GetFieldList()} FROM {TableNameForSql()} limit {number}; ";
             return selectStatement;
         }
 
-        public override string GetQueryTopRecordsSql(int number,string where)
+        public override string GetQueryTopRecordsSql(int number, string where, QueryLockType lockType = QueryLockType.None)
         {
+            ThrowIfLockRequested(lockType);
             var selectStatement = $"Select {GetFieldList()} FROM {TableNameForSql()} {where} limit {number}; ";
             return selectStatement;
+        }
+
+        protected override string GetTableLockHint(QueryLockType lockType)
+        {
+            ThrowIfLockRequested(lockType);
+            return string.Empty;
+        }
+
+        protected override string GetSuffixLockClause(QueryLockType lockType)
+        {
+            ThrowIfLockRequested(lockType);
+            return string.Empty;
+        }
+
+        private static void ThrowIfLockRequested(QueryLockType lockType)
+        {
+            if (lockType != QueryLockType.None)
+                throw new NotSupportedException($"SQLite does not support row-level lock hints ({lockType}).");
         }
 
         public SqlBuilder_Sqlite(IDataTablePrefixProvider dataTablePrefixProvider = null)
@@ -42,8 +63,9 @@ namespace GlueFramework.Core.ORM
             Analyze<T>(dataTablePrefixProvider);
         }
 
-        protected override  string GetSelectByPagerSql(string filter, string orderby, int pageIndex, int pageSize)
+        protected override  string GetSelectByPagerSql(string filter, string orderby, int pageIndex, int pageSize, QueryLockType lockType = QueryLockType.None)
         {
+            ThrowIfLockRequested(lockType);
             int skip = 1;
             if (pageIndex > 0)
             {

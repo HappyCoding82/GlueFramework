@@ -34,6 +34,11 @@ namespace GlueFramework.Core.Abstractions
 
         public PagerInfo Pager { get; set; }
 
+        /// <summary>
+        /// Optional row-level lock hint for the generated SELECT query.
+        /// </summary>
+        public QueryLockType LockType { get; set; } = QueryLockType.None;
+
         public PagedFilterOptions<Model> ThenBy(Expression<Func<Model, object?>> keySelector)
         {
             if (keySelector == null)

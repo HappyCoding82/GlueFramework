@@ -3,6 +3,7 @@ using GlueFramework.Core.ORM;
 using GlueFramework.Core.ORM.LambdaToSQL;
 using GlueFramework.Core.LambdaToSQL.Extensions;
 using System.Linq.Expressions;
+using static GlueFramework.Core.ORM.SqlBuilderFactory;
 
 namespace GlueFramework.CoreTests.Sql
 {
@@ -436,6 +437,108 @@ namespace GlueFramework.CoreTests.Sql
             CollectionAssert.Contains(result.ParameterNames, "p1");
             CollectionAssert.Contains(result.ParameterNames, "p2");
             CollectionAssert.Contains(result.ParameterNames, "p3");
+        }
+
+        [TestMethod]
+        public void BuildQuery_ForUpdate_SqlServer_AppendsTableHint()
+        {
+            var db = new FakeDbConnectionAccessor(() => new FakeSqlServerConnection());
+            var service = new SqlGenerationTestService(db, new FixedPrefixProvider(prefix: ""));
+
+            var result = service.BuildDemoProductQuerySqlWithLock(42, QueryLockType.ForUpdate, DBTypes.SQLSERVER);
+
+            StringAssert.Contains(result.Sql, "[DemoProduct] WITH (UPDLOCK, ROWLOCK, HOLDLOCK)");
+            Assert.IsFalse(result.Sql.Contains("FOR UPDATE"));
+        }
+
+        [TestMethod]
+        public void BuildQuery_ForUpdate_PostgreSql_AppendsForUpdate()
+        {
+            var db = new FakeDbConnectionAccessor(() => new FakeNpgsqlConnection());
+            var service = new SqlGenerationTestService(db, new FixedPrefixProvider(prefix: ""));
+
+            var result = service.BuildDemoProductQuerySqlWithLock(42, QueryLockType.ForUpdate, DBTypes.POSTGRESQL);
+
+            StringAssert.Contains(result.Sql, "FOR UPDATE");
+            Assert.IsFalse(result.Sql.Contains("WITH ("));
+        }
+
+        [TestMethod]
+        public void BuildQuery_ForUpdate_MySql_AppendsForUpdate()
+        {
+            var db = new FakeDbConnectionAccessor(() => new FakeMySqlConnection());
+            var service = new SqlGenerationTestService(db, new FixedPrefixProvider(prefix: ""));
+
+            var result = service.BuildDemoProductQuerySqlWithLock(42, QueryLockType.ForUpdate, DBTypes.MYSQL);
+
+            StringAssert.Contains(result.Sql, "FOR UPDATE");
+        }
+
+        [TestMethod]
+        public void BuildQueryTop_ForUpdate_PostgreSql_AppendsForUpdateAfterLimit()
+        {
+            var db = new FakeDbConnectionAccessor(() => new FakeNpgsqlConnection());
+            var service = new SqlGenerationTestService(db, new FixedPrefixProvider(prefix: ""));
+
+            var result = service.BuildDemoProductQueryTopSqlWithLock(42, QueryLockType.ForUpdate, DBTypes.POSTGRESQL);
+
+            StringAssert.Contains(result.Sql, "limit 1 FOR UPDATE");
+        }
+
+        [TestMethod]
+        public void PagedFilterOptions_ForUpdate_SqlServer_AppendsTableHint()
+        {
+            var db = new FakeDbConnectionAccessor(() => new FakeSqlServerConnection());
+            var service = new SqlGenerationTestService(db, new FixedPrefixProvider(prefix: ""));
+
+            var result = service.BuildDemoProductPagedQuerySqlWithLock(QueryLockType.ForUpdate, DBTypes.SQLSERVER);
+
+            StringAssert.Contains(result.Sql, "[DemoProduct] WITH (UPDLOCK, ROWLOCK, HOLDLOCK)");
+        }
+
+        [TestMethod]
+        public void PagedFilterOptions_ForUpdate_PostgreSql_AppendsForUpdateBeforeLimit()
+        {
+            var db = new FakeDbConnectionAccessor(() => new FakeNpgsqlConnection());
+            var service = new SqlGenerationTestService(db, new FixedPrefixProvider(prefix: ""));
+
+            var result = service.BuildDemoProductPagedQuerySqlWithLock(QueryLockType.ForUpdate, DBTypes.POSTGRESQL);
+
+            StringAssert.Contains(result.Sql, "FOR UPDATE");
+            StringAssert.Contains(result.Sql, "LIMIT 10");
+        }
+
+        [TestMethod]
+        public void JoinQuery_ForUpdate_SqlServer_AppendsTableHint()
+        {
+            var db = new FakeDbConnectionAccessor(() => new FakeSqlServerConnection());
+            var service = new SqlGenerationTestService(db, new FixedPrefixProvider(prefix: ""));
+
+            var result = service.BuildDemoProductJoinQuerySqlWithLock(QueryLockType.ForUpdate, DBTypes.SQLSERVER);
+
+            StringAssert.Contains(result.Sql, "[DemoProduct] t1 WITH (UPDLOCK, ROWLOCK, HOLDLOCK)");
+        }
+
+        [TestMethod]
+        public void JoinQuery_ForUpdate_PostgreSql_AppendsForUpdateBeforePaging()
+        {
+            var db = new FakeDbConnectionAccessor(() => new FakeNpgsqlConnection());
+            var service = new SqlGenerationTestService(db, new FixedPrefixProvider(prefix: ""));
+
+            var result = service.BuildDemoProductJoinQuerySqlWithLock(QueryLockType.ForUpdate, DBTypes.POSTGRESQL);
+
+            StringAssert.Contains(result.Sql, "FOR UPDATE OF t1");
+            StringAssert.Contains(result.Sql, "LIMIT @take");
+        }
+
+        [TestMethod]
+        public void BuildQuery_ForUpdate_Sqlite_ThrowsNotSupported()
+        {
+            var db = new FakeDbConnectionAccessor(() => new FakeSqliteConnection());
+            var service = new SqlGenerationTestService(db, new FixedPrefixProvider(prefix: ""));
+
+            Assert.ThrowsException<NotSupportedException>(() =>
+                service.BuildDemoProductQuerySqlWithLock(42, QueryLockType.ForUpdate, DBTypes.SQLITE));
         }
 
         private static async Task<WherePart> BuildWhereAsync(int categoryId)

@@ -28,26 +28,41 @@ namespace GlueFramework.Core.ORM
             return DBTypes.POSTGRESQL;
         }
 
-        public override string GetSelectTopRecordsSql(int number)
+        public override string GetSelectTopRecordsSql(int number, QueryLockType lockType = QueryLockType.None)
         {
-            return $"Select {GetFieldList()} FROM {TableNameForSql()} limit {number}; ";
+            var lockClause = lockType == QueryLockType.None ? string.Empty : GetSuffixLockClause(lockType);
+            return $"Select {GetFieldList()} FROM {TableNameForSql()} limit {number}{lockClause}; ";
         }
 
-        public override string GetQueryTopRecordsSql(int number, string where)
+        public override string GetQueryTopRecordsSql(int number, string where, QueryLockType lockType = QueryLockType.None)
         {
-            return $"Select {GetFieldList()} FROM {TableNameForSql()} {where} limit {number}; ";
+            var lockClause = lockType == QueryLockType.None ? string.Empty : GetSuffixLockClause(lockType);
+            return $"Select {GetFieldList()} FROM {TableNameForSql()} {where} limit {number}{lockClause}; ";
         }
 
-        protected override string GetSelectByPagerSql(string filter, string orderby, int pageIndex, int pageSize)
+        protected override string GetSelectByPagerSql(string filter, string orderby, int pageIndex, int pageSize, QueryLockType lockType = QueryLockType.None)
         {
             var skip = 0;
             if (pageIndex > 1)
                 skip = (pageIndex - 1) * pageSize;
 
             var fieldList = GetFieldList();
+            var lockClause = lockType == QueryLockType.None ? string.Empty : GetSuffixLockClause(lockType);
             var sb = new StringBuilder();
-            sb.AppendFormat($"SELECT {fieldList} FROM {TableNameForSql()} {filter} {orderby} LIMIT {pageSize} OFFSET {skip}");
+            sb.AppendFormat($"SELECT {fieldList} FROM {TableNameForSql()} {filter} {orderby} LIMIT {pageSize} OFFSET {skip}{lockClause}");
             return sb.ToString();
+        }
+
+        protected override string GetSuffixLockClause(QueryLockType lockType)
+        {
+            return lockType switch
+            {
+                QueryLockType.ForUpdate => " FOR UPDATE",
+                QueryLockType.ForNoKeyUpdate => " FOR NO KEY UPDATE",
+                QueryLockType.ForShare => " FOR SHARE",
+                QueryLockType.ForKeyShare => " FOR KEY SHARE",
+                _ => throw new NotSupportedException($"Lock type {lockType} is not supported on PostgreSQL.")
+            };
         }
 
         public string GetSelectByFilterSql(string filter, int recordNumber)

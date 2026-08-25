@@ -26,16 +26,28 @@ namespace GlueFramework.Core.ORM
             return "(Select Cast(SCOPE_IDENTITY() as INT))";
         }
 
-        public override string GetSelectTopRecordsSql(int number)
+        public override string GetSelectTopRecordsSql(int number, QueryLockType lockType = QueryLockType.None)
         {
-            var selectStatement = $"Select Top {number} {GetFieldList()} FROM {TableNameForSql()} ; ";
+            var lockHint = lockType == QueryLockType.None ? string.Empty : GetTableLockHint(lockType);
+            var selectStatement = $"Select Top {number} {GetFieldList()} FROM {TableNameForSql()}{lockHint} ; ";
             return selectStatement;
         }
 
-        public override string GetQueryTopRecordsSql(int number, string where)
+        public override string GetQueryTopRecordsSql(int number, string where, QueryLockType lockType = QueryLockType.None)
         {
-            var selectStatement = $"Select Top {number} {GetFieldList()} FROM {TableNameForSql()} {where} ; ";
+            var lockHint = lockType == QueryLockType.None ? string.Empty : GetTableLockHint(lockType);
+            var selectStatement = $"Select Top {number} {GetFieldList()} FROM {TableNameForSql()}{lockHint} {where} ; ";
             return selectStatement;
+        }
+
+        protected override string GetTableLockHint(QueryLockType lockType)
+        {
+            return lockType switch
+            {
+                QueryLockType.ForUpdate => " WITH (UPDLOCK, ROWLOCK, HOLDLOCK)",
+                QueryLockType.ForShare => " WITH (HOLDLOCK, ROWLOCK)",
+                _ => throw new NotSupportedException($"Lock type {lockType} is not supported on SQL Server.")
+            };
         }
 
 
@@ -44,7 +56,7 @@ namespace GlueFramework.Core.ORM
             Analyze<T>(dataTablePrefixProvider);
         }
 
-        protected override string GetSelectByPagerSql(string filter, string orderby, int pageIndex, int pageSize)
+        protected override string GetSelectByPagerSql(string filter, string orderby, int pageIndex, int pageSize, QueryLockType lockType = QueryLockType.None)
         {
             int skip = 1;
             if (pageIndex > 0)
@@ -53,10 +65,11 @@ namespace GlueFramework.Core.ORM
             }
             StringBuilder sb = new StringBuilder();
             var fieldList = GetFieldList();
+            var lockHint = lockType == QueryLockType.None ? string.Empty : GetTableLockHint(lockType);
 
             sb.AppendFormat(@$"SELECT  {fieldList} FROM(
                                SELECT ROW_NUMBER() OVER({orderby}) AS RowNum,{fieldList} 
-                                FROM  {TableNameForSql()} {filter}) AS result
+                                FROM  {TableNameForSql()}{lockHint} {filter}) AS result
                                 WHERE  RowNum >= {skip}   AND RowNum <= {pageIndex * pageSize}
                                 {orderby}");
             return sb.ToString();
