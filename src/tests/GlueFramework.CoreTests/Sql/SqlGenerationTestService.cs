@@ -1,6 +1,7 @@
 using GlueFramework.Core.Abstractions;
 using GlueFramework.Core.ORM;
 using GlueFramework.Core.Services;
+using System.Linq.Expressions;
 
 namespace GlueFramework.CoreTests.Sql
 {
@@ -111,6 +112,93 @@ namespace GlueFramework.CoreTests.Sql
         {
             var ids = Enumerable.Range(1, 1001).ToArray();
             return BuildDemoProductReportSqlWithIn(ids, skip, take);
+        }
+
+        public async Task<JoinQuerySqlResult> BuildDemoProductReportSqlAsync_CapturedCategory(int categoryId, int skip, int take)
+        {
+            await Task.Yield();
+
+            using var s = OpenJoinQuerySessionScope();
+
+            var q = s.Session
+                .From<DemoProduct>()
+                .Join<Category>((p, c) => p.CategoryId == c.Id)
+                .Join<Brand>((p, c, b) => p.BrandId == b.Id, GlueFramework.Core.ORM.JoinType.Left)
+                .Where((p, c, b) => p.CategoryId == categoryId);
+
+            var task = q
+                .OrderBy((p, c, b) => p.Id)
+                .Select((p, c, b) => new DemoProductReportRow
+                {
+                    ProductId = p.Id,
+                    ProductName = p.Name,
+                    Price = p.Price,
+                    CategoryName = c.CategoryName,
+                    BrandName = b.BrandName
+                })
+                .Page(skip, take)
+                .PrintToListSqlAsync();
+
+            var (sql, parameters) = await task;
+            return new JoinQuerySqlResult(sql, parameters.ParameterNames.ToArray());
+        }
+
+        public async Task<JoinQuerySqlResult> BuildDemoProductReportSqlAsync_CapturedName(string name, int skip, int take)
+        {
+            await Task.Yield();
+
+            using var s = OpenJoinQuerySessionScope();
+
+            var q = s.Session
+                .From<DemoProduct>()
+                .Join<Category>((p, c) => p.CategoryId == c.Id)
+                .Join<Brand>((p, c, b) => p.BrandId == b.Id, GlueFramework.Core.ORM.JoinType.Left)
+                .Where((p, c, b) => p.Name.Contains(name));
+
+            var task = q
+                .OrderBy((p, c, b) => p.Id)
+                .Select((p, c, b) => new DemoProductReportRow
+                {
+                    ProductId = p.Id,
+                    ProductName = p.Name,
+                    Price = p.Price,
+                    CategoryName = c.CategoryName,
+                    BrandName = b.BrandName
+                })
+                .Page(skip, take)
+                .PrintToListSqlAsync();
+
+            var (sql, parameters) = await task;
+            return new JoinQuerySqlResult(sql, parameters.ParameterNames.ToArray());
+        }
+
+        public async Task<JoinQuerySqlResult> BuildDemoProductReportSqlAsync_CapturedIn(IReadOnlyCollection<int> ids, int skip, int take)
+        {
+            await Task.Yield();
+
+            using var s = OpenJoinQuerySessionScope();
+
+            var q = s.Session
+                .From<DemoProduct>()
+                .Join<Category>((p, c) => p.CategoryId == c.Id)
+                .Join<Brand>((p, c, b) => p.BrandId == b.Id, GlueFramework.Core.ORM.JoinType.Left)
+                .Where((p, c, b) => ids.Contains(p.Id));
+
+            var task = q
+                .OrderBy((p, c, b) => p.Id)
+                .Select((p, c, b) => new DemoProductReportRow
+                {
+                    ProductId = p.Id,
+                    ProductName = p.Name,
+                    Price = p.Price,
+                    CategoryName = c.CategoryName,
+                    BrandName = b.BrandName
+                })
+                .Page(skip, take)
+                .PrintToListSqlAsync();
+
+            var (sql, parameters) = await task;
+            return new JoinQuerySqlResult(sql, parameters.ParameterNames.ToArray());
         }
 
         public JoinQuerySqlResult BuildDemoProductAggregateSql(decimal minTotal, bool distinct)

@@ -1,4 +1,8 @@
 using GlueFramework.Core.Abstractions;
+using GlueFramework.Core.ORM;
+using GlueFramework.Core.ORM.LambdaToSQL;
+using GlueFramework.Core.LambdaToSQL.Extensions;
+using System.Linq.Expressions;
 
 namespace GlueFramework.CoreTests.Sql
 {
@@ -361,6 +365,98 @@ namespace GlueFramework.CoreTests.Sql
 
             SqlAssertHelpers.AreSqlEqual(expected, result.Sql);
             CollectionAssert.AreEquivalent(Array.Empty<string>(), result.ParameterNames);
+        }
+
+        [TestMethod]
+        public async Task WhereBuilder_AsyncCapturedLocalInt_GeneratesSqlServerSql()
+        {
+            var result = await BuildWhereAsync(5);
+
+            const string expected = "(DemoProduct.[CategoryId] = @1)";
+            Assert.AreEqual(expected, result.Sql);
+            Assert.AreEqual(1, result.Parameters.Count);
+            Assert.AreEqual(5, result.Parameters[0].Value);
+        }
+
+        [TestMethod]
+        public async Task WhereBuilder_AsyncCapturedLocalString_GeneratesSqlServerSql()
+        {
+            var result = await BuildNameContainsWhereAsync("abc");
+
+            const string expected = "(DemoProduct.[Name] LIKE @1)";
+            Assert.AreEqual(expected, result.Sql);
+            Assert.AreEqual(1, result.Parameters.Count);
+            Assert.AreEqual("%abc%", result.Parameters[0].Value);
+        }
+
+        [TestMethod]
+        public async Task WhereBuilder_AsyncCapturedList_GeneratesSqlServerSql()
+        {
+            var result = await BuildInWhereAsync(new[] { 1, 2, 3 });
+
+            const string expected = "(DemoProduct.[Id] IN (@1,@2,@3))";
+            Assert.AreEqual(expected, result.Sql);
+            Assert.AreEqual(3, result.Parameters.Count);
+            CollectionAssert.AreEquivalent(new[] { 1, 2, 3 }, result.Parameters.Select(p => p.Value).ToArray());
+        }
+
+        [TestMethod]
+        public async Task DemoProductReport_AsyncCapturedCategory_GeneratesSqlServerSql()
+        {
+            var db = new FakeDbConnectionAccessor(() => new FakeSqlServerConnection());
+            var service = new SqlGenerationTestService(db, new FixedPrefixProvider(prefix: ""));
+
+            var result = await service.BuildDemoProductReportSqlAsync_CapturedCategory(42, skip: 0, take: 10);
+
+            StringAssert.Contains(result.Sql, "t1.[CategoryId] = @p1");
+            CollectionAssert.Contains(result.ParameterNames, "p1");
+        }
+
+        [TestMethod]
+        public async Task DemoProductReport_AsyncCapturedName_GeneratesSqlServerSql()
+        {
+            var db = new FakeDbConnectionAccessor(() => new FakeSqlServerConnection());
+            var service = new SqlGenerationTestService(db, new FixedPrefixProvider(prefix: ""));
+
+            var result = await service.BuildDemoProductReportSqlAsync_CapturedName("abc", skip: 0, take: 10);
+
+            StringAssert.Contains(result.Sql, "t1.[Name] LIKE @p1");
+            CollectionAssert.Contains(result.ParameterNames, "p1");
+        }
+
+        [TestMethod]
+        public async Task DemoProductReport_AsyncCapturedIn_GeneratesSqlServerSql()
+        {
+            var db = new FakeDbConnectionAccessor(() => new FakeSqlServerConnection());
+            var service = new SqlGenerationTestService(db, new FixedPrefixProvider(prefix: ""));
+
+            var result = await service.BuildDemoProductReportSqlAsync_CapturedIn(new[] { 1, 2, 3 }, skip: 0, take: 10);
+
+            StringAssert.Contains(result.Sql, "t1.[Id] IN (@p1");
+            CollectionAssert.Contains(result.ParameterNames, "p1");
+            CollectionAssert.Contains(result.ParameterNames, "p2");
+            CollectionAssert.Contains(result.ParameterNames, "p3");
+        }
+
+        private static async Task<WherePart> BuildWhereAsync(int categoryId)
+        {
+            await Task.Yield();
+            Expression<Func<DemoProduct, bool>> predicate = p => p.CategoryId == categoryId;
+            return predicate.ToSql("DemoProduct", SqlBuilderFactory.DBTypes.SQLSERVER);
+        }
+
+        private static async Task<WherePart> BuildNameContainsWhereAsync(string name)
+        {
+            await Task.Yield();
+            Expression<Func<DemoProduct, bool>> predicate = p => p.Name.Contains(name);
+            return predicate.ToSql("DemoProduct", SqlBuilderFactory.DBTypes.SQLSERVER);
+        }
+
+        private static async Task<WherePart> BuildInWhereAsync(IReadOnlyCollection<int> ids)
+        {
+            await Task.Yield();
+            Expression<Func<DemoProduct, bool>> predicate = p => ids.Contains(p.Id);
+            return predicate.ToSql("DemoProduct", SqlBuilderFactory.DBTypes.SQLSERVER);
         }
     }
 }

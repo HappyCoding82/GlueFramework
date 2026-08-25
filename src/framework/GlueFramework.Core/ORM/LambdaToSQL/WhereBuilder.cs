@@ -259,7 +259,32 @@ namespace GlueFramework.Core.ORM.LambdaToSQL
 
         private static object GetValue(Expression member)
         {
-            var objectMember = Expression.Convert(member, typeof(object));
+            return Evaluate(member);
+        }
+
+        private static object Evaluate(Expression expression)
+        {
+            if (expression is ConstantExpression constant)
+            {
+                return constant.Value;
+            }
+
+            if (expression is MemberExpression memberExpression)
+            {
+                var target = memberExpression.Expression != null
+                    ? Evaluate(memberExpression.Expression)
+                    : null;
+
+                return memberExpression.Member switch
+                {
+                    FieldInfo field => field.GetValue(target),
+                    PropertyInfo property => property.GetValue(target),
+                    _ => throw new NotSupportedException($"Unsupported member type: {memberExpression.Member.GetType()}")
+                };
+            }
+
+            // Fallback for expressions not handled above (e.g. NewArrayExpression)
+            var objectMember = Expression.Convert(expression, typeof(object));
             var getterLambda = Expression.Lambda<Func<object>>(objectMember);
             var getter = getterLambda.Compile();
             return getter();
