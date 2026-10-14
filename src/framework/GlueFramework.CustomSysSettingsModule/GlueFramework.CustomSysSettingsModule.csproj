@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -16,11 +16,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="OrchardCore.Admin" Version="2.2.1" />
-    <PackageReference Include="OrchardCore.Module.Targets" Version="2.2.1" />
-    <PackageReference Include="OrchardCore.ContentManagement" Version="2.2.1" />
-    <PackageReference Include="OrchardCore.ContentTypes.Abstractions" Version="2.2.1" />
-    <PackageReference Include="OrchardCore.DisplayManagement" Version="2.2.1" />
+    <PackageReference Include="OrchardCore.Admin" Version="3.0.0" />
+    <PackageReference Include="OrchardCore.Module.Targets" Version="3.0.0" />
+    <PackageReference Include="OrchardCore.ContentManagement" Version="3.0.0" />
+    <PackageReference Include="OrchardCore.ContentTypes.Abstractions" Version="3.0.0" />
+    <PackageReference Include="OrchardCore.DisplayManagement" Version="3.0.0" />
   </ItemGroup>
 
   <ItemGroup>

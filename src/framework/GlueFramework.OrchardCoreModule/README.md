@@ -47,6 +47,6 @@ public class MyModule : StartupBase
 
 - `GlueFramework.Core` - Foundation services
 - `GlueFramework.WebCore` - Web utilities
-- OrchardCore 2.2.1 modules
+- OrchardCore 3.0 modules
 
 This is a foundational package - most other GlueFramework modules depend on it.
