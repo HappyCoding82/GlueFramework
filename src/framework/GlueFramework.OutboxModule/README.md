@@ -8,6 +8,8 @@ Reliable event publishing with Outbox and Inbox patterns for OrchardCore.
 
 - **Reliable Event Publishing** - Events are persisted before dispatch
 - **Automatic Retry** - Failed dispatches are retried with exponential backoff
+- **Processing Timeout Recovery** - Expired processing leases are marked failed and retried
+- **Multi-instance Safe** - Atomic lease claiming and fencing tokens prevent duplicate dispatch
 - **Admin UI** - View, retry, and manage outbox messages
 - **Auto-Cleanup** - Automatic cleanup of succeeded messages
 
@@ -21,6 +23,7 @@ Reliable event publishing with Outbox and Inbox patterns for OrchardCore.
 - `GET /Admin/Outbox/Records` - View pending/failed messages
 - `GET /Admin/Outbox/Archive` - View archived messages
 - `POST /Admin/OutboxAdmin/UpdateOutboxStatus` - Manually update message status
+- `POST /Admin/OutboxAdmin/RetryOutboxNow` - Retry a failed message immediately
 - `POST /Admin/OutboxAdmin/ArchiveOutbox` - Archive a message
 
 ## Configuration
@@ -30,6 +33,7 @@ Outbox:
   Enabled: true
   DispatchIntervalSeconds: 5
   BatchSize: 50
+  ProcessingTimeoutSeconds: 120
   InboxRetentionDays: 30
   EnableInboxCleanup: true
 ```

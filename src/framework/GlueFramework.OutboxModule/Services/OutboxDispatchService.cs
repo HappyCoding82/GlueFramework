@@ -84,15 +84,33 @@ namespace GlueFramework.OutboxModule.Services
                 _logger.LogInformation("Inbox cleanup removed {Count} records", deleted);
         }
 
-        private static async Task DispatchOnceAsync(IOutboxStore outbox, IEventBus eventBus, OutboxSettings opt, CancellationToken cancellationToken)
+        private async Task DispatchOnceAsync(IOutboxStore outbox, IEventBus eventBus, OutboxSettings opt, CancellationToken cancellationToken)
         {
             var now = DateTimeOffset.UtcNow;
-            var batch = await outbox.GetPendingAsync(Math.Max(1, opt.BatchSize), now, cancellationToken);
+            var batchSize = Math.Max(1, opt.BatchSize);
+
+            var timedOut = await outbox.GetTimedOutProcessingAsync(batchSize, now, cancellationToken);
+            foreach (var timedOutMessage in timedOut)
+            {
+                var nextRetrySeconds = BackoffSeconds(timedOutMessage.TryCount + 1);
+                var recovered = await outbox.MarkProcessingTimedOutAsync(
+                    timedOutMessage.MessageId,
+                    timedOutMessage.LockToken,
+                    now,
+                    nextRetrySeconds,
+                    cancellationToken);
+
+                if (recovered)
+                    _logger.LogWarning("Outbox message {MessageId} timed out during processing and will be retried.", timedOutMessage.MessageId);
+            }
+
+            var batch = await outbox.GetPendingAsync(batchSize, now, cancellationToken);
 
             foreach (var msg in batch)
             {
-                var locked = await outbox.TryMarkProcessingAsync(msg.MessageId, now, now.AddMinutes(2), cancellationToken);
-                if (!locked)
+                var processingTimeout = TimeSpan.FromSeconds(Math.Max(15, opt.ProcessingTimeoutSeconds));
+                var lockToken = await outbox.TryMarkProcessingAsync(msg.MessageId, now, now.Add(processingTimeout), cancellationToken);
+                if (lockToken == null)
                     continue;
 
                 try
@@ -115,12 +133,20 @@ namespace GlueFramework.OutboxModule.Services
                     {
                         EventDispatchContext.MessageId = prev;
                     }
-                    await outbox.MarkSucceededAsync(msg.MessageId, DateTimeOffset.UtcNow, cancellationToken);
+                    var succeeded = await outbox.MarkSucceededAsync(msg.MessageId, lockToken, DateTimeOffset.UtcNow, cancellationToken);
+                    if (!succeeded)
+                        _logger.LogWarning("Outbox message {MessageId} completed after losing its processing lease.", msg.MessageId);
+                }
+                catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+                {
+                    throw;
                 }
                 catch (Exception ex)
                 {
                     var nextRetrySeconds = BackoffSeconds(msg.TryCount + 1);
-                    await outbox.MarkFailedAsync(msg.MessageId, DateTimeOffset.UtcNow, ex.ToString(), nextRetrySeconds, cancellationToken);
+                    var marked = await outbox.MarkFailedAsync(msg.MessageId, lockToken, DateTimeOffset.UtcNow, ex.ToString(), nextRetrySeconds, cancellationToken);
+                    if (!marked)
+                        _logger.LogWarning("Outbox message {MessageId} failed after losing its processing lease.", msg.MessageId);
                 }
             }
         }
@@ -133,6 +159,7 @@ namespace GlueFramework.OutboxModule.Services
                 AutoEnqueueIntegrationEvents = _configOptions.Value.AutoEnqueueIntegrationEvents,
                 DispatchIntervalSeconds = _configOptions.Value.DispatchIntervalSeconds,
                 BatchSize = _configOptions.Value.BatchSize,
+                ProcessingTimeoutSeconds = _configOptions.Value.ProcessingTimeoutSeconds,
                 OutboxRetentionDays = _configOptions.Value.OutboxRetentionDays,
                 EnableOutboxCleanup = _configOptions.Value.EnableOutboxCleanup,
                 InboxRetentionDays = _configOptions.Value.InboxRetentionDays,
@@ -147,6 +174,7 @@ namespace GlueFramework.OutboxModule.Services
                 merged.AutoEnqueueIntegrationEvents = settings.AutoEnqueueIntegrationEvents;
                 merged.DispatchIntervalSeconds = settings.DispatchIntervalSeconds;
                 merged.BatchSize = settings.BatchSize;
+                merged.ProcessingTimeoutSeconds = settings.ProcessingTimeoutSeconds;
                 merged.OutboxRetentionDays = settings.OutboxRetentionDays;
                 merged.EnableOutboxCleanup = settings.EnableOutboxCleanup;
                 merged.InboxRetentionDays = settings.InboxRetentionDays;

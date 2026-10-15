@@ -11,6 +11,7 @@ namespace GlueFramework.Core.Abstractions.Outbox
         int TryCount,
         DateTimeOffset? LockedUntilUtc,
         DateTimeOffset? NextRetryUtc,
-        string? LastError
+        string? LastError,
+        string? LockToken
     );
 }

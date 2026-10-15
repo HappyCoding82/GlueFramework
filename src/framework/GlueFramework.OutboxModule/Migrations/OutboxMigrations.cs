@@ -84,5 +84,19 @@ namespace GlueFramework.OutboxModule.Migrations
 
             return 2;
         }
+
+        public async Task<int> UpdateFrom2Async()
+        {
+            await SchemaBuilder.AlterTableAsync("OutboxMessage", table =>
+            {
+                table.AddColumn<string>("LockToken", column => column.Nullable().WithLength(64));
+                table.CreateIndex("IDX_OutboxMessage_LockedUntilUtc", "LockedUntilUtc");
+            });
+
+            await SchemaBuilder.AlterTableAsync("OutboxMessageArchive", table => table
+                .AddColumn<string>("LockToken", column => column.Nullable().WithLength(64)));
+
+            return 3;
+        }
     }
 }

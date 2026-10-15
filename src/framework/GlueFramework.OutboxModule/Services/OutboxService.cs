@@ -64,6 +64,13 @@ namespace GlueFramework.OutboxModule.Services
             return await dal.UpdateStatusAsync(messageId, status, DateTimeOffset.UtcNow, cancellationToken);
         }
 
+        public async Task<bool> RetryNowAsync(Guid messageId, CancellationToken cancellationToken = default)
+        {
+            using var dbSession = OpenDbSessionScope();
+            var dal = _dalFactory.CreateDAL<SqlOutboxStore>(dbSession);
+            return await dal.RetryNowAsync(messageId, DateTimeOffset.UtcNow, cancellationToken);
+        }
+
         public async Task<bool> ArchiveAsync(Guid messageId, CancellationToken cancellationToken = default)
         {
             using var dbSession = OpenDbSessionScope();

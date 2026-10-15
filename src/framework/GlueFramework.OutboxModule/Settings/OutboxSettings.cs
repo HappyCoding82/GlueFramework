@@ -10,6 +10,8 @@ namespace GlueFramework.OutboxModule.Settings
 
         public int BatchSize { get; set; } = 50;
 
+        public int ProcessingTimeoutSeconds { get; set; } = 120;
+
         public int OutboxRetentionDays { get; set; } = 3;
 
         public bool EnableOutboxCleanup { get; set; } = true;

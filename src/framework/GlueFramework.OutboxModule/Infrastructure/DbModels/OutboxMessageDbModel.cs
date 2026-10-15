@@ -25,6 +25,8 @@ namespace GlueFramework.OutboxModule.Infrastructure.DbModels
 
         public DateTime? LockedUntilUtc { get; set; }
 
+        public string? LockToken { get; set; }
+
         public DateTime? NextRetryUtc { get; set; }
 
         public string? LastError { get; set; }

@@ -58,6 +58,17 @@ namespace GlueFramework.OutboxModule.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RetryNow(Guid messageId, CancellationToken cancellationToken = default)
+        {
+            if (!await _authorizationService.AuthorizeAsync(User, Permissions.ManageOutbox))
+                return Forbid();
+
+            await _outbox.RetryNowAsync(messageId, cancellationToken);
+            return RedirectToAction(nameof(Detail), new { messageId });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Archive(Guid messageId, CancellationToken cancellationToken = default)
         {
             if (!await _authorizationService.AuthorizeAsync(User, Permissions.ManageOutbox))

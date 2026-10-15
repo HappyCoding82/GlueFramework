@@ -1,4 +1,7 @@
+using Dapper;
 using GlueFramework.Core.Abstractions;
+using GlueFramework.Core.Diagnostics;
+using GlueFramework.Core.ORM;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -36,6 +39,7 @@ namespace GlueFramework.OutboxModule.Infrastructure
                 Status = "Pending",
                 TryCount = 0,
                 LockedUntilUtc = null,
+                LockToken = null,
                 NextRetryUtc = null,
                 LastError = null,
                 CreatedUtc = DateTime.UtcNow,
@@ -56,6 +60,22 @@ namespace GlueFramework.OutboxModule.Infrastructure
             return rows
                 .OrderBy(x => x.OccurredUtc)
                 .Take(Math.Max(1, batchSize))
+                .Select(Map)
+                .ToList();
+        }
+
+        public async Task<List<OutboxMessageRecord>> GetTimedOutProcessingAsync(int batchSize, DateTimeOffset nowUtc, CancellationToken cancellationToken = default)
+        {
+            var repo = GetRepository<OutboxMessageDbModel>();
+            var nowUtcDt = nowUtc.UtcDateTime;
+            var rows = await repo.QueryTopAsync(x =>
+                x.Status == "Processing"
+                && x.LockedUntilUtc != null
+                && x.LockedUntilUtc <= nowUtcDt,
+                Math.Max(1, batchSize));
+
+            return rows
+                .OrderBy(x => x.OccurredUtc)
                 .Select(Map)
                 .ToList();
         }
@@ -116,6 +136,8 @@ namespace GlueFramework.OutboxModule.Infrastructure
 
             var affected = await repo.UpdatePartialAsync(key, p => p
                 .Set(x => x.Status, status)
+                .Set(x => x.LockedUntilUtc, (DateTime?)null)
+                .Set(x => x.LockToken, (string?)null)
                 .Set(x => x.UpdatedUtc, nowUtc.UtcDateTime));
             return affected > 0;
         }
@@ -139,6 +161,7 @@ namespace GlueFramework.OutboxModule.Infrastructure
                 Status = existing.Status,
                 TryCount = existing.TryCount,
                 LockedUntilUtc = existing.LockedUntilUtc,
+                LockToken = existing.LockToken,
                 NextRetryUtc = existing.NextRetryUtc,
                 LastError = existing.LastError,
                 CreatedUtc = existing.CreatedUtc,
@@ -150,67 +173,152 @@ namespace GlueFramework.OutboxModule.Infrastructure
             return true;
         }
 
-        public async Task<bool> TryMarkProcessingAsync(Guid messageId, DateTimeOffset nowUtc, DateTimeOffset lockedUntilUtc, CancellationToken cancellationToken = default)
+        public async Task<string?> TryMarkProcessingAsync(Guid messageId, DateTimeOffset nowUtc, DateTimeOffset lockedUntilUtc, CancellationToken cancellationToken = default)
         {
-            //await using var conn = _db.CreateConnection();
-            //await conn.OpenAsync(cancellationToken);
+            var lockToken = Guid.NewGuid().ToString("N");
+            var sql = $@"
+UPDATE {OutboxTableName}
+SET {Column("Status")} = 'Processing',
+    {Column("LockedUntilUtc")} = @LockedUntilUtc,
+    {Column("LockToken")} = @LockToken,
+    {Column("UpdatedUtc")} = @NowUtc
+WHERE {Column("MessageId")} = @MessageId
+  AND ({Column("Status")} = 'Pending'
+       OR ({Column("Status")} = 'Failed'
+           AND {Column("NextRetryUtc")} IS NOT NULL
+           AND {Column("NextRetryUtc")} <= @NowUtc))
+  AND ({Column("LockedUntilUtc")} IS NULL OR {Column("LockedUntilUtc")} <= @NowUtc);";
 
-            var repo = GetRepository<OutboxMessageDbModel>();
-            var key = new OutboxMessageDbModel { MessageId = messageId.ToString("N") };
-            var existing = await repo.GetSingleOrDefaultByKeyAsync(key);
-            if (existing == null)
-                return false;
+            var affected = await DbConnection.ExecuteAsync(new CommandDefinition(
+                sql,
+                new
+                {
+                    MessageId = messageId.ToString("N"),
+                    NowUtc = nowUtc.UtcDateTime,
+                    LockedUntilUtc = lockedUntilUtc.UtcDateTime,
+                    LockToken = lockToken
+                },
+                _session.Transaction,
+                cancellationToken: cancellationToken));
 
-            var nowUtcDt = nowUtc.UtcDateTime;
-            var lockedUntilDt = lockedUntilUtc.UtcDateTime;
+            return affected > 0 ? lockToken : null;
+        }
 
-            var canClaim =
-                (existing.Status == "Pending" || (existing.Status == "Failed" && existing.NextRetryUtc != null && existing.NextRetryUtc <= nowUtcDt))
-                && (existing.LockedUntilUtc == null || existing.LockedUntilUtc < nowUtcDt);
+        public async Task<bool> MarkProcessingTimedOutAsync(Guid messageId, string? lockToken, DateTimeOffset nowUtc, int nextRetrySeconds, CancellationToken cancellationToken = default)
+        {
+            var sql = $@"
+UPDATE {OutboxTableName}
+SET {Column("Status")} = 'Failed',
+    {Column("TryCount")} = {Column("TryCount")} + 1,
+    {Column("LockedUntilUtc")} = NULL,
+    {Column("LockToken")} = NULL,
+    {Column("NextRetryUtc")} = @NextRetryUtc,
+    {Column("LastError")} = @LastError,
+    {Column("UpdatedUtc")} = @NowUtc
+WHERE {Column("MessageId")} = @MessageId
+  AND {Column("Status")} = 'Processing'
+  AND {Column("LockedUntilUtc")} IS NOT NULL
+  AND {Column("LockedUntilUtc")} <= @NowUtc
+  AND ({Column("LockToken")} = @LockToken OR ({Column("LockToken")} IS NULL AND @LockToken IS NULL));";
 
-            if (!canClaim)
-                return false;
-
-            var affected = await repo.UpdatePartialAsync(key, p => p
-                .Set(x => x.Status, "Processing")
-                .Set(x => x.LockedUntilUtc, lockedUntilDt)
-                .Set(x => x.UpdatedUtc, nowUtcDt));
+            var affected = await DbConnection.ExecuteAsync(new CommandDefinition(
+                sql,
+                new
+                {
+                    MessageId = messageId.ToString("N"),
+                    LockToken = lockToken,
+                    NowUtc = nowUtc.UtcDateTime,
+                    NextRetryUtc = nowUtc.AddSeconds(Math.Max(5, nextRetrySeconds)).UtcDateTime,
+                    LastError = "Processing timeout"
+                },
+                _session.Transaction,
+                cancellationToken: cancellationToken));
 
             return affected > 0;
         }
 
-        public async Task MarkSucceededAsync(Guid messageId, DateTimeOffset nowUtc, CancellationToken cancellationToken = default)
+        public async Task<bool> MarkSucceededAsync(Guid messageId, string lockToken, DateTimeOffset nowUtc, CancellationToken cancellationToken = default)
         {
-            
-            var repo = GetRepository<OutboxMessageDbModel>();
-            var nowUtcDt = nowUtc.UtcDateTime;
-            var key = new OutboxMessageDbModel { MessageId = messageId.ToString("N") };
-            await repo.UpdatePartialAsync(key, p => p
-                .Set(x => x.Status, "Succeeded")
-                .Set(x => x.LockedUntilUtc, (DateTime?)null)
-                .Set(x => x.NextRetryUtc, (DateTime?)null)
-                .Set(x => x.LastError, (string?)null)
-                .Set(x => x.UpdatedUtc, nowUtcDt));
+            var sql = $@"
+UPDATE {OutboxTableName}
+SET {Column("Status")} = 'Succeeded',
+    {Column("LockedUntilUtc")} = NULL,
+    {Column("LockToken")} = NULL,
+    {Column("NextRetryUtc")} = NULL,
+    {Column("LastError")} = NULL,
+    {Column("UpdatedUtc")} = @NowUtc
+WHERE {Column("MessageId")} = @MessageId
+  AND {Column("Status")} = 'Processing'
+  AND {Column("LockToken")} = @LockToken;";
+
+            var affected = await DbConnection.ExecuteAsync(new CommandDefinition(
+                sql,
+                new
+                {
+                    MessageId = messageId.ToString("N"),
+                    LockToken = lockToken,
+                    NowUtc = nowUtc.UtcDateTime
+                },
+                _session.Transaction,
+                cancellationToken: cancellationToken));
+
+            return affected > 0;
         }
 
-        public async Task MarkFailedAsync(Guid messageId, DateTimeOffset nowUtc, string error, int nextRetrySeconds, CancellationToken cancellationToken = default)
+        public async Task<bool> MarkFailedAsync(Guid messageId, string lockToken, DateTimeOffset nowUtc, string error, int nextRetrySeconds, CancellationToken cancellationToken = default)
         {
-            var nextRetry = nowUtc.AddSeconds(Math.Max(5, nextRetrySeconds));
-            var nowUtcDt = nowUtc.UtcDateTime;
-            var nextRetryDt = nextRetry.UtcDateTime;
+            var sql = $@"
+UPDATE {OutboxTableName}
+SET {Column("Status")} = 'Failed',
+    {Column("TryCount")} = {Column("TryCount")} + 1,
+    {Column("LockedUntilUtc")} = NULL,
+    {Column("LockToken")} = NULL,
+    {Column("NextRetryUtc")} = @NextRetryUtc,
+    {Column("LastError")} = @LastError,
+    {Column("UpdatedUtc")} = @NowUtc
+WHERE {Column("MessageId")} = @MessageId
+  AND {Column("Status")} = 'Processing'
+  AND {Column("LockToken")} = @LockToken;";
 
-            var repo = GetRepository<OutboxMessageDbModel>();
-            var key = new OutboxMessageDbModel { MessageId = messageId.ToString("N") };
-            var existing = await repo.GetSingleOrDefaultByKeyAsync(key);
-            var nextTry = (existing?.TryCount ?? 0) + 1;
+            var affected = await DbConnection.ExecuteAsync(new CommandDefinition(
+                sql,
+                new
+                {
+                    MessageId = messageId.ToString("N"),
+                    LockToken = lockToken,
+                    NowUtc = nowUtc.UtcDateTime,
+                    NextRetryUtc = nowUtc.AddSeconds(Math.Max(5, nextRetrySeconds)).UtcDateTime,
+                    LastError = error
+                },
+                _session.Transaction,
+                cancellationToken: cancellationToken));
 
-            await repo.UpdatePartialAsync(key, p => p
-                .Set(x => x.Status, "Failed")
-                .Set(x => x.TryCount, nextTry)
-                .Set(x => x.LockedUntilUtc, (DateTime?)null)
-                .Set(x => x.NextRetryUtc, nextRetryDt)
-                .Set(x => x.LastError, error)
-                .Set(x => x.UpdatedUtc, nowUtcDt));
+            return affected > 0;
+        }
+
+        public async Task<bool> RetryNowAsync(Guid messageId, DateTimeOffset nowUtc, CancellationToken cancellationToken = default)
+        {
+            var sql = $@"
+UPDATE {OutboxTableName}
+SET {Column("Status")} = 'Pending',
+    {Column("LockedUntilUtc")} = NULL,
+    {Column("LockToken")} = NULL,
+    {Column("NextRetryUtc")} = NULL,
+    {Column("UpdatedUtc")} = @NowUtc
+WHERE {Column("MessageId")} = @MessageId
+  AND {Column("Status")} = 'Failed';";
+
+            var affected = await DbConnection.ExecuteAsync(new CommandDefinition(
+                sql,
+                new
+                {
+                    MessageId = messageId.ToString("N"),
+                    NowUtc = nowUtc.UtcDateTime
+                },
+                _session.Transaction,
+                cancellationToken: cancellationToken));
+
+            return affected > 0;
         }
 
         public async Task<List<OutboxMessageRecord>> QueryAsync(int take, string? status, CancellationToken cancellationToken = default)
@@ -236,7 +344,42 @@ namespace GlueFramework.OutboxModule.Infrastructure
             var occurredUtc = new DateTimeOffset(m.OccurredUtc, TimeSpan.Zero);
             DateTimeOffset? lockedUntil = m.LockedUntilUtc == null ? null : new DateTimeOffset(m.LockedUntilUtc.Value, TimeSpan.Zero);
             DateTimeOffset? nextRetry = m.NextRetryUtc == null ? null : new DateTimeOffset(m.NextRetryUtc.Value, TimeSpan.Zero);
-            return new OutboxMessageRecord(messageId, m.Type, m.Payload, occurredUtc, m.Status, m.TryCount, lockedUntil, nextRetry, m.LastError);
+            return new OutboxMessageRecord(messageId, m.Type, m.Payload, occurredUtc, m.Status, m.TryCount, lockedUntil, nextRetry, m.LastError, m.LockToken);
+        }
+
+        private string OutboxTableName
+        {
+            get
+            {
+                var tableName = (_tableNamePrefixProvider?.Prefix ?? string.Empty) + ModelName.Table<OutboxMessageDbModel>();
+                var schema = (_tableNamePrefixProvider as ITenantTableSettingsProvider)?.Schema;
+                return string.IsNullOrWhiteSpace(schema)
+                    ? QuoteIdentifier(tableName)
+                    : QuoteIdentifier(schema) + "." + QuoteIdentifier(tableName);
+            }
+        }
+
+        private string Column(string name) => QuoteIdentifier(name);
+
+        private string QuoteIdentifier(string name)
+        {
+            return GetIdentifierDelimiter() switch
+            {
+                ('"', '"') => $"\"{name.Replace("\"", "\"\"")}\"",
+                ('`', '`') => $"`{name.Replace("`", "``")}`",
+                _ => $"[{name.Replace("]", "]]" )}]"
+            };
+        }
+
+        private (char Prefix, char Suffix) GetIdentifierDelimiter()
+        {
+            var connectionType = DbConnectionUnwrapper.Unwrap(DbConnection).GetType().FullName ?? string.Empty;
+            if (connectionType.Contains("Npgsql", StringComparison.InvariantCultureIgnoreCase) ||
+                connectionType.Contains("Postgre", StringComparison.InvariantCultureIgnoreCase))
+                return ('"', '"');
+            if (connectionType.Contains("MySql", StringComparison.InvariantCultureIgnoreCase))
+                return ('`', '`');
+            return ('[', ']');
         }
     }
 }

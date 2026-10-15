@@ -78,6 +78,7 @@ namespace GlueFramework.OutboxModule.Controllers
                 s.AutoEnqueueIntegrationEvents = model.AutoEnqueueIntegrationEvents;
                 s.DispatchIntervalSeconds = model.DispatchIntervalSeconds;
                 s.BatchSize = model.BatchSize;
+                s.ProcessingTimeoutSeconds = model.ProcessingTimeoutSeconds;
                 s.OutboxRetentionDays = model.OutboxRetentionDays;
                 s.EnableOutboxCleanup = model.EnableOutboxCleanup;
                 s.InboxRetentionDays = model.InboxRetentionDays;
@@ -109,6 +110,16 @@ namespace GlueFramework.OutboxModule.Controllers
                 return Forbid();
 
             var ok = await _outbox.UpdateStatusAsync(messageId, status, cancellationToken);
+            return Ok(new { ok });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> RetryOutboxNow([FromQuery] Guid messageId, CancellationToken cancellationToken = default)
+        {
+            if (!await _authorizationService.AuthorizeAsync(User, Permissions.ManageOutbox))
+                return Forbid();
+
+            var ok = await _outbox.RetryNowAsync(messageId, cancellationToken);
             return Ok(new { ok });
         }
 

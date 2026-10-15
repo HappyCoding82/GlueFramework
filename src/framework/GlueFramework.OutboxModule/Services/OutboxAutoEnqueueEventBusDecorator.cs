@@ -74,6 +74,7 @@ namespace GlueFramework.OutboxModule.Services
                 AutoEnqueueIntegrationEvents = _configOptions.Value.AutoEnqueueIntegrationEvents,
                 DispatchIntervalSeconds = _configOptions.Value.DispatchIntervalSeconds,
                 BatchSize = _configOptions.Value.BatchSize,
+                ProcessingTimeoutSeconds = _configOptions.Value.ProcessingTimeoutSeconds,
                 OutboxRetentionDays = _configOptions.Value.OutboxRetentionDays,
                 EnableOutboxCleanup = _configOptions.Value.EnableOutboxCleanup,
                 InboxRetentionDays = _configOptions.Value.InboxRetentionDays,
@@ -88,6 +89,7 @@ namespace GlueFramework.OutboxModule.Services
                 merged.AutoEnqueueIntegrationEvents = settings.AutoEnqueueIntegrationEvents;
                 merged.DispatchIntervalSeconds = settings.DispatchIntervalSeconds;
                 merged.BatchSize = settings.BatchSize;
+                merged.ProcessingTimeoutSeconds = settings.ProcessingTimeoutSeconds;
                 merged.OutboxRetentionDays = settings.OutboxRetentionDays;
                 merged.EnableOutboxCleanup = settings.EnableOutboxCleanup;
                 merged.InboxRetentionDays = settings.InboxRetentionDays;

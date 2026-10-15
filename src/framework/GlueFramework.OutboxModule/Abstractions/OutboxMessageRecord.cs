@@ -11,6 +11,7 @@ namespace Tierdrop.Outbox.Abstractions
         int TryCount,
         DateTimeOffset? LockedUntilUtc,
         DateTimeOffset? NextRetryUtc,
-        string? LastError
+        string? LastError,
+        string? LockToken
     );
 }

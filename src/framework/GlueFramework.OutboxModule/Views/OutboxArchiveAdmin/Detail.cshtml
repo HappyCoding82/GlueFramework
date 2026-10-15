@@ -10,6 +10,7 @@
     <tr><th>ArchivedUtc</th><td>@Model.Item.ArchivedUtc.ToString("u")</td></tr>
     <tr><th>TryCount</th><td>@Model.Item.TryCount</td></tr>
     <tr><th>LockedUntilUtc</th><td>@(Model.Item.LockedUntilUtc?.ToString("u") ?? "")</td></tr>
+    <tr><th>LockToken</th><td><code>@Model.Item.LockToken</code></td></tr>
     <tr><th>NextRetryUtc</th><td>@(Model.Item.NextRetryUtc?.ToString("u") ?? "")</td></tr>
 </table>
 

@@ -11,11 +11,17 @@ namespace GlueFramework.Core.Abstractions.Outbox
 
         Task<List<OutboxMessageRecord>> GetPendingAsync(int batchSize, DateTimeOffset nowUtc, CancellationToken cancellationToken = default);
 
-        Task<bool> TryMarkProcessingAsync(Guid messageId, DateTimeOffset nowUtc, DateTimeOffset lockedUntilUtc, CancellationToken cancellationToken = default);
+        Task<List<OutboxMessageRecord>> GetTimedOutProcessingAsync(int batchSize, DateTimeOffset nowUtc, CancellationToken cancellationToken = default);
 
-        Task MarkSucceededAsync(Guid messageId, DateTimeOffset nowUtc, CancellationToken cancellationToken = default);
+        Task<string?> TryMarkProcessingAsync(Guid messageId, DateTimeOffset nowUtc, DateTimeOffset lockedUntilUtc, CancellationToken cancellationToken = default);
 
-        Task MarkFailedAsync(Guid messageId, DateTimeOffset nowUtc, string error, int nextRetrySeconds, CancellationToken cancellationToken = default);
+        Task<bool> MarkProcessingTimedOutAsync(Guid messageId, string? lockToken, DateTimeOffset nowUtc, int nextRetrySeconds, CancellationToken cancellationToken = default);
+
+        Task<bool> MarkSucceededAsync(Guid messageId, string lockToken, DateTimeOffset nowUtc, CancellationToken cancellationToken = default);
+
+        Task<bool> MarkFailedAsync(Guid messageId, string lockToken, DateTimeOffset nowUtc, string error, int nextRetrySeconds, CancellationToken cancellationToken = default);
+
+        Task<bool> RetryNowAsync(Guid messageId, DateTimeOffset nowUtc, CancellationToken cancellationToken = default);
 
         Task<List<OutboxMessageRecord>> QueryAsync(int take, string? status, CancellationToken cancellationToken = default);
     }
