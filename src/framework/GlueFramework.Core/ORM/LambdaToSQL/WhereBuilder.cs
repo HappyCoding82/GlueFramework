@@ -1,4 +1,4 @@
-﻿using GlueFramework.Core.Abstractions;
+using GlueFramework.Core.Abstractions;
 using GlueFramework.Core.LambdaToSQL.Extensions;
 using System.Collections;
 using System.Linq.Expressions;
@@ -281,6 +281,18 @@ namespace GlueFramework.Core.ORM.LambdaToSQL
                     PropertyInfo property => property.GetValue(target),
                     _ => throw new NotSupportedException($"Unsupported member type: {memberExpression.Member.GetType()}")
                 };
+            }
+
+            // C# 14/.NET 10 compilers optimize array .Contains() into a span-based call
+            // (System.MemoryExtensions.Contains), producing an implicit-conversion wrapper
+            // op_Implicit(Convert(<source>, T[])). ReadOnlySpan<T> is a ref struct and cannot
+            // be boxed, so unwrap the argument and evaluate the real collection instead of
+            // falling through to Expression.Convert (which would throw InvalidProgramException).
+            if (expression is MethodCallExpression methodCall
+                && methodCall.Method.Name == "op_Implicit"
+                && methodCall.Arguments.Count >= 1)
+            {
+                return Evaluate(methodCall.Arguments[0]);
             }
 
             // Fallback for expressions not handled above (e.g. NewArrayExpression)

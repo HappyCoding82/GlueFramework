@@ -402,6 +402,30 @@ namespace GlueFramework.CoreTests.Sql
         }
 
         [TestMethod]
+        public async Task WhereBuilder_CapturedIntArrayIn_GeneratesSqlServerSql()
+        {
+            // C# 14/.NET 10 compiles array .Contains() to a span-based call; this intent is the
+            // regression test for WhereBuilder.Evaluate handling the op_Implicit span wrapper.
+            var result = await BuildInWhereArrayAsync(new[] { 1, 2, 3 });
+
+            const string expected = "(DemoProduct.[Id] IN (@1,@2,@3))";
+            Assert.AreEqual(expected, result.Sql);
+            Assert.AreEqual(3, result.Parameters.Count);
+        }
+
+        [TestMethod]
+        public async Task WhereBuilder_CapturedStringArrayIn_GeneratesSqlServerSql()
+        {
+            // Mirrors the reported backend failure: ids.Contains(x.Property) with string[].
+            var result = await BuildInWhereStringArrayAsync(new[] { "A", "B", "C" });
+
+            const string expected = "(DemoProduct.[Name] IN (@1,@2,@3))";
+            Assert.AreEqual(expected, result.Sql);
+            Assert.AreEqual(3, result.Parameters.Count);
+            CollectionAssert.AreEquivalent(new[] { "A", "B", "C" }, result.Parameters.Select(p => p.Value).ToArray());
+        }
+
+        [TestMethod]
         public async Task DemoProductReport_AsyncCapturedCategory_GeneratesSqlServerSql()
         {
             var db = new FakeDbConnectionAccessor(() => new FakeSqlServerConnection());
@@ -559,6 +583,20 @@ namespace GlueFramework.CoreTests.Sql
         {
             await Task.Yield();
             Expression<Func<DemoProduct, bool>> predicate = p => ids.Contains(p.Id);
+            return predicate.ToSql("DemoProduct", SqlBuilderFactory.DBTypes.SQLSERVER);
+        }
+
+        private static async Task<WherePart> BuildInWhereArrayAsync(int[] ids)
+        {
+            await Task.Yield();
+            Expression<Func<DemoProduct, bool>> predicate = p => ids.Contains(p.Id);
+            return predicate.ToSql("DemoProduct", SqlBuilderFactory.DBTypes.SQLSERVER);
+        }
+
+        private static async Task<WherePart> BuildInWhereStringArrayAsync(string[] values)
+        {
+            await Task.Yield();
+            Expression<Func<DemoProduct, bool>> predicate = p => values.Contains(p.Name);
             return predicate.ToSql("DemoProduct", SqlBuilderFactory.DBTypes.SQLSERVER);
         }
     }
